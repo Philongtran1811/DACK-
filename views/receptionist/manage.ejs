@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Quản Lý Đặt Phòng - Lễ Tân</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .status-badge { min-width: 100px; text-align: center; }
+        .table img { width: 50px; height: 50px; object-fit: cover; border-radius: 5px; }
+    </style>
+</head>
+<body class="bg-light">
+
+<nav class="navbar navbar-dark bg-dark mb-4">
+    <div class="container">
+        <a class="navbar-brand" href="/">🏨 HOTEL PRO - RECEPTIONIST</a>
+        <span class="text-white">Chào, <%= user.name %></span>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="card shadow">
+        <div class="card-header bg-white py-3">
+            <h4 class="mb-0 text-primary">🛎️ Danh Sách Tiếp Nhận Đặt Phòng</h4>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Khách hàng</th>
+                            <th>Thông tin phòng</th>
+                            <th>Thời gian</th>
+                            <th>Thanh toán</th>
+                            <th>Trạng thái</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% bookings.forEach(bk => { %>
+                            <tr>
+                                <td>
+                                    <strong><%= bk.user?.name %></strong><br>
+                                    <small class="text-muted">📞 <%= bk.user?.phone %></small>
+                                </td>
+                                <td>
+                                    <b>Phòng <%= bk.room?.roomCode %></b><br>
+                                    <small><%= bk.room?.roomType?.name %></small>
+                                </td>
+                                <td>
+                                    <small>In: <%= new Date(bk.checkIn).toLocaleDateString('vi-VN') %></small><br>
+                                    <small>Out: <%= new Date(bk.checkOut).toLocaleDateString('vi-VN') %></small>
+                                </td>
+                                <td>
+                                    <span class="text-danger fw-bold"><%= bk.totalPrice?.toLocaleString() %>đ</span>
+                                </td>
+                                <td>
+                                    <% if(bk.status === 'CONFIRMED') { %>
+                                        <span class="badge bg-primary status-badge">ĐÃ ĐẶT</span>
+                                    <% } else if(bk.status === 'CHECKED_IN') { %>
+                                        <span class="badge bg-success status-badge">ĐANG Ở</span>
+                                    <% } else if(bk.status === 'COMPLETED') { %>
+                                        <span class="badge bg-secondary status-badge">HOÀN TẤT</span>
+                                    <% } else { %>
+                                        <span class="badge bg-danger status-badge">ĐÃ HỦY</span>
+                                    <% } %>
+                                </td>
+                                <td>
+                                    <div class="btn-group">
+                                        <% if(bk.status === 'CONFIRMED') { %>
+                                            <button onclick="changeStatus('<%= bk._id %>', 'CHECKED_IN')" class="btn btn-sm btn-success">Check-in</button>
+                                        <% } %>
+                                        
+                                        <% if(bk.status === 'CHECKED_IN') { %>
+                                            <button onclick="changeStatus('<%= bk._id %>', 'COMPLETED')" class="btn btn-sm btn-info text-white">Check-out</button>
+                                        <% } %>
+
+                                        <% if(bk.status !== 'CANCELLED' && bk.status !== 'COMPLETED') { %>
+                                            <button onclick="changeStatus('<%= bk._id %>', 'CANCELLED')" class="btn btn-sm btn-outline-danger">Hủy</button>
+                                        <% } %>
+                                    </div>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+async function changeStatus(bookingId, newStatus) {
+    if(!confirm(`Xác nhận chuyển trạng thái đơn hàng sang ${newStatus}?`)) return;
+
+    try {
+        const response = await fetch(`/api/bookings/update-status/${bookingId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: newStatus })
+        });
+
+        const data = await response.json();
+        if(response.ok) {
+            alert(data.message);
+            location.reload(); // Tải lại trang để cập nhật giao diện
+        } else {
+            alert(data.message || "Có lỗi xảy ra");
+        }
+    } catch (err) {
+        alert("Không thể kết nối đến server");
+    }
+}
+</script>
+
+</body>
+</html>

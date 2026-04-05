@@ -124,18 +124,32 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
         password: e.target.password.value
     };
 
-    const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-        credentials: "include" // 🔥 QUAN TRỌNG nếu dùng cookie
-    });
+    try {
+        const res = await fetch("/api/auth/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
+            credentials: "include" 
+        });
 
-    if (res.ok) {
-        alert("Đăng nhập thành công");
-        window.location.href = "/";
-    } else {
-        alert("Sai tài khoản hoặc mật khẩu");
+        const result = await res.json(); 
+
+        if (res.ok) {
+            // ✅ HIỂN THỊ THÔNG BÁO THÀNH CÔNG
+            console.log("Quyền truy cập:", result.role);
+            
+            // 🚀 TỰ ĐỘNG NHẢY TRANG THEO ROLE
+            if (result.role === "RECEPTIONIST" || result.role === "ADMIN") {
+                window.location.href = "/manage/bookings"; // Vào thẳng trang Lễ tân
+            } else {
+                window.location.href = "/"; // Khách thường về trang chủ
+            }
+        } else {
+            alert(result.message || "Sai tài khoản hoặc mật khẩu");
+        }
+    } catch (err) {
+        console.error("Lỗi kết nối:", err);
+        alert("Server đang bận, vui lòng thử lại sau!");
     }
 });
 </script>
