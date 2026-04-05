@@ -1,6 +1,5 @@
 const express = require("express");
 const router = express.Router();
-
 const userController = require("../controllers/user.controller");
 const { checkLogin } = require("../middlewares/auth.middleware");
 
@@ -10,12 +9,13 @@ const { checkLogin } = require("../middlewares/auth.middleware");
 router.post("/register", async (req, res) => {
     try {
         const user = await userController.register(req.body);
-        res.send({
+        // Thay vì chỉ gửi user, ta gửi kèm thông báo rõ ràng
+        res.status(201).json({
             message: "Đăng ký thành công",
-            user
+            user: { id: user._id, username: user.username } // Trả về thông tin cơ bản thôi cho bảo mật
         });
     } catch (err) {
-        res.status(400).send(err.message);
+        res.status(400).json({ message: err.message });
     }
 });
 
@@ -26,22 +26,33 @@ router.post("/login", async (req, res) => {
     try {
         const { username, password } = req.body;
 
+        // Gọi hàm login từ controller
         const token = await userController.login(username, password);
 
         if (!token) {
-            return res.status(401).send("Sai tài khoản hoặc mật khẩu");
+            // Trả về lỗi 401 nếu sai pass/user
+            return res.status(401).json({ message: "Sai tài khoản hoặc mật khẩu" });
         }
 
-        // 🔥 Lưu cookie
+        // 🔥 Lưu cookie với cấu hình chuẩn
         res.cookie("TOKEN_HOTEL", token, {
-            httpOnly: true,
-            maxAge: 24 * 60 * 60 * 1000
+            httpOnly: true, // Bảo mật, chặn JS đọc cookie
+            maxAge: 24 * 60 * 60 * 1000,
+            sameSite: 'lax', // Giúp cookie hoạt động ổn định trên localhost
+            secure: false    // Để false vì bạn đang dùng http (localhost), nếu lên https thì để true
         });
 
-        // 🔥 Redirect về trang chủ (quan trọng để hiện tên)
-        res.redirect("/");
+        // 💡 Mẹo: Nếu request từ trình duyệt (form submit) thì redirect
+        // Nếu request từ Postman/Ajax thì trả về JSON thành công
+        if (req.headers['content-type'] === 'application/x-www-form-urlencoded') {
+            return res.redirect("/");
+        }
+        
+        res.json({ message: "Đăng nhập thành công", token });
+
     } catch (err) {
-        res.status(500).send("Lỗi server");
+        console.error("Login Error:", err);
+        res.status(500).json({ message: "Lỗi hệ thống khi đăng nhập" });
     }
 });
 
@@ -49,7 +60,8 @@ router.post("/login", async (req, res) => {
 // 👤 GET USER HIỆN TẠI
 //
 router.get("/me", checkLogin, (req, res) => {
-    res.send(req.user);
+    // Trả về thông tin user đã được gán bởi middleware checkLogin
+    res.json(req.user);
 });
 
 //

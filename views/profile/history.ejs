@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Lịch sử đặt phòng</title>
+    <style>
+        body { font-family: 'Segoe UI'; background: #f4f7fb; padding: 40px; }
+        .container { max-width: 900px; margin: auto; }
+        .booking-card {
+            background: white; padding: 20px; border-radius: 12px;
+            margin-bottom: 15px; display: flex; justify-content: space-between;
+            align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        .info b { font-size: 18px; color: #1e293b; }
+        .status { padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; }
+        .CONFIRMED { background: #dcfce7; color: #166534; }
+        .CANCELLED { background: #fee2e2; color: #991b1b; }
+        .price { color: #e11d48; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>📋 Lịch sử đặt phòng của <%= user.name %></h2>
+        <br>
+        <% if (bookings.length === 0) { %>
+            <p>Bạn chưa đặt phòng nào. <a href="/rooms">Xem danh sách phòng</a></p>
+        <% } %>
+
+        <% bookings.forEach(bk => { %>
+            <div class="booking-card">
+                <div class="info">
+                    <b>Phòng: <%= bk.room ? bk.room.roomCode : 'N/A' %></b> <br>
+                    <small>Loại: <%= bk.room?.roomType?.name %></small> <br>
+                    <small>Ngày đặt: <%= new Date(bk.createdAt).toLocaleString('vi-VN') %></small>
+                </div>
+                <div>
+                    Từ: <b><%= new Date(bk.checkIn).toLocaleDateString('vi-VN') %></b> <br>
+                    Đến: <b><%= new Date(bk.checkOut).toLocaleDateString('vi-VN') %></b>
+                </div>
+                <div style="text-align: right;">
+                    <div class="price"><%= bk.totalPrice?.toLocaleString() %> VND</div>
+                    <span class="status <%= bk.status %>"><%= bk.status %></span>
+                </div>
+            </div>
+        <% }) %>
+        
+        <hr>
+        <a href="/">🏠 Quay lại trang chủ</a>
+    </div>
+</body>
+</html>

@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Đặt phòng</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fb;
+            padding: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .box {
+            width: 100%;
+            max-width: 400px;
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 25px;
+            color: #1e293b;
+        }
+
+        .room-info {
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 20px;
+            border: 1px solid #e2e8f0;
+            line-height: 1.6;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #64748b;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            border: 1px solid #cbd5e1;
+            box-sizing: border-box;
+            outline: none;
+            transition: border 0.3s;
+        }
+
+        input:focus {
+            border-color: #4f46e5;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            background: #4f46e5;
+            color: white;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background: #4338ca;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="box">
+    <h2>🏨 Đặt phòng</h2>
+
+    <div class="room-info">
+        <b>Mã phòng:</b> <%= room.roomCode %> <br>
+        <b>Loại:</b> <%= room.roomType ? room.roomType.name : 'Chưa cập nhật' %> <br>
+        <b>Giá:</b> <span style="color: #ef4444; font-weight: bold;"><%= room.roomType ? room.roomType.price : 0 %></span> / ngày
+    </div>
+
+    <form id="bookingForm">
+        <label>Ngày nhận phòng</label>
+        <input type="date" name="checkIn" id="checkIn" required>
+        
+        <label>Ngày trả phòng</label>
+        <input type="date" name="checkOut" id="checkOut" required>
+
+        <button type="submit">Xác nhận đặt phòng</button>
+    </form>
+</div>
+
+<script>
+document.getElementById("bookingForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const checkIn = e.target.checkIn.value;
+    const checkOut = e.target.checkOut.value;
+
+    // 1. Kiểm tra ngày ngay tại Client
+    if (new Date(checkIn) >= new Date(checkOut)) {
+        alert("❌ Ngày nhận phòng phải trước ngày trả phòng!");
+        return;
+    }
+
+    // 2. Chuẩn bị dữ liệu gửi đi (Không có voucherCode)
+    const data = {
+        roomId: "<%= room._id %>",
+        checkIn: checkIn,
+        checkOut: checkOut
+    };
+
+    try {
+        const res = await fetch("/api/bookings", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data)
+        });
+
+        const result = await res.json();
+
+        if (res.ok) {
+            alert("🎉 Chúc mừng! Bạn đã đặt phòng thành công.");
+            window.location.href = "/"; // Quay về trang chủ
+        } else {
+            // Hiển thị lỗi chi tiết từ server trả về
+            alert("⚠️ " + (result.message || "Đã có lỗi xảy ra"));
+        }
+    } catch (err) {
+        console.error(err);
+        alert("🔥 Không thể kết nối đến server!");
+    }
+});
+</script>
+
+</body>
+</html>
