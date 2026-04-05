@@ -19,7 +19,7 @@ router.post("/register", async (req, res) => {
     }
 });
 
-// 🔐 LOGIN (Đoạn này đã được sửa để Redirect thông minh)
+// 🔐 LOGIN (Đã nâng cấp logic phân quyền Admin & Staff)
 router.post("/login", async (req, res) => {
     try {
         const { username, password } = req.body;
@@ -29,6 +29,7 @@ router.post("/login", async (req, res) => {
             return res.status(401).json({ message: "Sai tài khoản hoặc mật khẩu" });
         }
 
+        // 🍪 Lưu Token vào Cookie
         res.cookie("TOKEN_HOTEL", result.token, {
             httpOnly: true,
             maxAge: 24 * 60 * 60 * 1000,
@@ -36,19 +37,26 @@ router.post("/login", async (req, res) => {
             secure: false 
         });
 
-        // 🔥 LOGIC REDIRECT DỰA TRÊN ROLE:
+        const userRole = result.user.role;
+
+        // 🚀 XỬ LÝ REDIRECT CHO FORM TRUYỀN THỐNG
         if (req.headers['content-type'] === 'application/x-www-form-urlencoded') {
-            
-            // Nếu là RECEPTIONIST hoặc ADMIN -> Vào thẳng trang quản lý
-            if (result.user.role === "RECEPTIONIST" || result.user.role === "ADMIN") {
-                return res.redirect("/manage/bookings"); 
+            if (userRole === "ADMIN") {
+                return res.redirect("/admin/dashboard"); // Admin vào Dashboard tổng
             }
-            
-            // Khách thường -> Về trang chủ
-            return res.redirect("/");
+            if (userRole === "RECEPTIONIST") {
+                return res.redirect("/manage/bookings"); // Lễ tân vào quản lý đơn
+            }
+            return res.redirect("/"); // Khách thường
         }
         
-        res.json({ message: "Đăng nhập thành công", role: result.user.role, token: result.token });
+        // ⚡ TRẢ VỀ JSON CHO FETCH API (Sử dụng cho login.ejs của nhóm bạn)
+        res.json({ 
+            message: "Đăng nhập thành công", 
+            role: userRole, 
+            token: result.token 
+        });
+
     } catch (err) {
         console.error("Login Error:", err);
         res.status(500).json({ message: "Lỗi hệ thống khi đăng nhập" });

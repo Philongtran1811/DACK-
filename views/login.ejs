@@ -2,16 +2,9 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Đăng nhập</title>
-
+    <title>Đăng nhập - Hotel Pro</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: Arial, sans-serif;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body {
             height: 100vh;
             display: flex;
@@ -19,99 +12,65 @@
             align-items: center;
             background: linear-gradient(135deg, #667eea, #764ba2);
         }
-
         .login-box {
             background: #fff;
             padding: 40px;
-            width: 350px;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            width: 380px;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
             text-align: center;
         }
-
-        .login-box h2 {
-            margin-bottom: 25px;
-            color: #333;
-        }
-
-        .input-group {
-            margin-bottom: 15px;
-            text-align: left;
-        }
-
-        .input-group label {
-            font-size: 14px;
-            color: #555;
-        }
-
+        .login-box h2 { margin-bottom: 25px; color: #333; font-weight: bold; }
+        .input-group { margin-bottom: 20px; text-align: left; }
+        .input-group label { font-size: 14px; color: #666; font-weight: 600; }
         .input-group input {
             width: 100%;
-            padding: 10px;
-            margin-top: 5px;
+            padding: 12px;
+            margin-top: 8px;
             border-radius: 8px;
-            border: 1px solid #ccc;
+            border: 1px solid #ddd;
             transition: 0.3s;
         }
-
-        .input-group input:focus {
-            border-color: #667eea;
-            outline: none;
-            box-shadow: 0 0 5px rgba(102,126,234,0.5);
-        }
-
+        .input-group input:focus { border-color: #667eea; outline: none; box-shadow: 0 0 8px rgba(102,126,234,0.3); }
         .btn-login {
             width: 100%;
-            padding: 12px;
+            padding: 14px;
             border: none;
             border-radius: 8px;
             background: #667eea;
             color: white;
             font-size: 16px;
+            font-weight: bold;
             cursor: pointer;
             transition: 0.3s;
         }
-
-        .btn-login:hover {
-            background: #5a67d8;
-        }
-
-        .extra {
-            margin-top: 15px;
-            font-size: 14px;
-        }
-
-        .extra a {
-            color: #667eea;
-            text-decoration: none;
-        }
-
-        .extra a:hover {
-            text-decoration: underline;
-        }
+        .btn-login:hover { background: #5a67d8; transform: translateY(-2px); }
+        .extra { margin-top: 20px; font-size: 14px; color: #777; }
+        .extra a { color: #667eea; text-decoration: none; font-weight: bold; }
+        .extra a:hover { text-decoration: underline; }
     </style>
 </head>
-
 <body>
 
 <div class="login-box">
-    <h2>Đăng nhập</h2>
+    <h2>ĐĂNG NHẬP</h2>
 
     <form id="loginForm">
         <div class="input-group">
             <label>Tài khoản</label>
-            <input type="text" name="username" required>
+            <input type="text" name="username" placeholder="Nhập username..." required>
         </div>
 
         <div class="input-group">
             <label>Mật khẩu</label>
-            <input type="password" name="password" required>
+            <input type="password" name="password" placeholder="Nhập mật khẩu..." required>
         </div>
 
-        <button class="btn-login">Đăng nhập</button>
+        <button type="submit" class="btn-login">ĐĂNG NHẬP HỆ THỐNG</button>
     </form>
 
     <div class="extra">
-        <p>Chưa có tài khoản? <a href="/register">Đăng ký</a></p>
+        <p>Chưa có tài khoản? <a href="/register">Đăng ký ngay</a></p>
     </div>
 </div>
 
@@ -135,21 +94,20 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
         const result = await res.json(); 
 
         if (res.ok) {
-            // ✅ HIỂN THỊ THÔNG BÁO THÀNH CÔNG
-            console.log("Quyền truy cập:", result.role);
-            
-            // 🚀 TỰ ĐỘNG NHẢY TRANG THEO ROLE
-            if (result.role === "RECEPTIONIST" || result.role === "ADMIN") {
-                window.location.href = "/manage/bookings"; // Vào thẳng trang Lễ tân
+            // 🚀 PHÂN QUYỀN ĐIỀU HƯỚNG THÔNG MINH
+            if (result.role === "ADMIN") {
+                window.location.href = "/admin/dashboard"; // Admin vào Dashboard tổng
+            } else if (result.role === "RECEPTIONIST") {
+                window.location.href = "/manage/bookings"; // Lễ tân vào quản lý đơn hàng
             } else {
-                window.location.href = "/"; // Khách thường về trang chủ
+                window.location.href = "/"; // Khách hàng về trang chủ
             }
         } else {
-            alert(result.message || "Sai tài khoản hoặc mật khẩu");
+            alert(result.message || "Tài khoản hoặc mật khẩu không chính xác!");
         }
     } catch (err) {
-        console.error("Lỗi kết nối:", err);
-        alert("Server đang bận, vui lòng thử lại sau!");
+        console.error("Lỗi:", err);
+        alert("Không thể kết nối đến máy chủ. Vui lòng thử lại!");
     }
 });
 </script>

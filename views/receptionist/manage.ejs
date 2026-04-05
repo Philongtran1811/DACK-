@@ -12,9 +12,18 @@
 <body class="bg-light">
 
 <nav class="navbar navbar-dark bg-dark mb-4">
-    <div class="container">
+    <div class="container d-flex justify-content-between align-items-center">
         <a class="navbar-brand" href="/">🏨 HOTEL PRO - RECEPTIONIST</a>
-        <span class="text-white">Chào, <%= user.name %></span>
+
+        <div class="d-flex align-items-center">
+            <span class="text-white me-3">
+                Chào, <%= user.name %>
+            </span>
+
+           <a href="/api/auth/logout" class="btn btn-outline-light btn-sm">
+    🚪 Đăng xuất
+</a>
+        </div>
     </div>
 </nav>
 
