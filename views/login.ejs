@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Đăng nhập</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+        }
+
+        .login-box {
+            background: #fff;
+            padding: 40px;
+            width: 350px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+
+        .login-box h2 {
+            margin-bottom: 25px;
+            color: #333;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+
+        .input-group label {
+            font-size: 14px;
+            color: #555;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            transition: 0.3s;
+        }
+
+        .input-group input:focus {
+            border-color: #667eea;
+            outline: none;
+            box-shadow: 0 0 5px rgba(102,126,234,0.5);
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background: #667eea;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn-login:hover {
+            background: #5a67d8;
+        }
+
+        .extra {
+            margin-top: 15px;
+            font-size: 14px;
+        }
+
+        .extra a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .extra a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="login-box">
+    <h2>Đăng nhập</h2>
+
+    <form id="loginForm">
+        <div class="input-group">
+            <label>Tài khoản</label>
+            <input type="text" name="username" required>
+        </div>
+
+        <div class="input-group">
+            <label>Mật khẩu</label>
+            <input type="password" name="password" required>
+        </div>
+
+        <button class="btn-login">Đăng nhập</button>
+    </form>
+
+    <div class="extra">
+        <p>Chưa có tài khoản? <a href="/register">Đăng ký</a></p>
+    </div>
+</div>
+
+<script>
+document.getElementById("loginForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const data = {
+        username: e.target.username.value,
+        password: e.target.password.value
+    };
+
+    const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+        credentials: "include" // 🔥 QUAN TRỌNG nếu dùng cookie
+    });
+
+    if (res.ok) {
+        alert("Đăng nhập thành công");
+        window.location.href = "/";
+    } else {
+        alert("Sai tài khoản hoặc mật khẩu");
+    }
+});
+</script>
+
+</body>
+</html>

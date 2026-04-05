@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Đăng ký</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+        }
+
+        .register-box {
+            background: #fff;
+            padding: 35px;
+            width: 380px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            text-align: center;
+            animation: fadeIn 0.6s ease;
+        }
+
+        .register-box h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .input-group {
+            margin-bottom: 12px;
+            text-align: left;
+        }
+
+        .input-group label {
+            font-size: 13px;
+            color: #555;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 9px;
+            margin-top: 4px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            transition: 0.3s;
+        }
+
+        .input-group input:focus {
+            border-color: #667eea;
+            outline: none;
+            box-shadow: 0 0 5px rgba(102,126,234,0.5);
+        }
+
+        .btn-register {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background: #28a745;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn-register:hover {
+            background: #218838;
+        }
+
+        .extra {
+            margin-top: 15px;
+            font-size: 14px;
+        }
+
+        .extra a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .extra a:hover {
+            text-decoration: underline;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="register-box">
+    <h2>Đăng ký</h2>
+
+    <form id="registerForm">
+        <div class="input-group">
+            <label>Tên</label>
+            <input type="text" name="name" required>
+        </div>
+
+        <div class="input-group">
+            <label>Số điện thoại</label>
+            <input type="text" name="phone">
+        </div>
+
+        <div class="input-group">
+            <label>Email</label>
+            <input type="email" name="email">
+        </div>
+
+        <div class="input-group">
+            <label>Tài khoản</label>
+            <input type="text" name="username" required>
+        </div>
+
+        <div class="input-group">
+            <label>Mật khẩu</label>
+            <input type="password" name="password" required>
+        </div>
+
+        <button class="btn-register">Đăng ký</button>
+    </form>
+
+    <div class="extra">
+        <p>Đã có tài khoản? <a href="/login">Đăng nhập</a></p>
+    </div>
+</div>
+
+<script>
+document.getElementById("registerForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const data = {
+        name: e.target.name.value,
+        phone: e.target.phone.value,
+        email: e.target.email.value,
+        username: e.target.username.value,
+        password: e.target.password.value
+    };
+
+    const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+        credentials: "include" // 🔥 nếu backend dùng cookie
+    });
+
+    if (res.ok) {
+        alert("Đăng ký thành công");
+        window.location.href = "/login";
+    } else {
+        alert("Đăng ký thất bại");
+    }
+});
+</script>
+
+</body>
+</html>
