@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title><%= title %> - Hotel Pro</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .service-card { 
+            border: none; 
+            border-radius: 20px; 
+            transition: 0.4s; 
+            overflow: hidden; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            background: #fff;
+        }
+        .service-card:hover { 
+            transform: translateY(-10px); 
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1); 
+        }
+        .img-container { height: 250px; overflow: hidden; }
+        .img-container img { 
+            width: 100%; 
+            height: 100%; 
+            object-fit: cover; 
+            transition: 0.5s;
+        }
+        .service-card:hover .img-container img {
+            transform: scale(1.1);
+        }
+        .card-title {
+            color: #2c3e50;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body class="bg-light">
+
+<nav class="navbar navbar-dark bg-dark mb-4 shadow-sm">
+    <div class="container">
+        <a class="navbar-brand fw-bold" href="/">🏨 HOTEL PRO / <%= title %></a>
+        <a href="/" class="btn btn-outline-light btn-sm rounded-pill px-3">Quay lại trang chủ</a>
+    </div>
+</nav>
+
+<div class="container pb-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold display-5"><%= title %></h1>
+        <div class="mx-auto mb-3" style="width: 60px; height: 4px; background: #0d6efd; border-radius: 2px;"></div>
+        <p class="text-muted fs-5">Trải nghiệm không gian và dịch vụ đẳng cấp 5 sao</p>
+    </div>
+
+    <div class="row g-4">
+        <% if (data && data.length > 0) { %>
+            <% data.forEach(item => { %>
+                <div class="col-md-4 col-lg-4"> <div class="card h-100 service-card text-center">
+                        <div class="img-container">
+                            <img src="<%= item.image %>" alt="<%= item.name %>" onerror="this.src='https://via.placeholder.com/500x350?text=Premium+Service'">
+                        </div>
+                        <div class="card-body p-4">
+                            <h4 class="card-title fw-bold"><%= item.name %></h4>
+                            <p class="card-text text-muted">
+                                <%= item.description || 'Khám phá sự khác biệt và đẳng cấp trong từng chi tiết dịch vụ tại Hotel Pro.' %>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            <% }) %>
+        <% } else { %>
+            <div class="col-12 text-center py-5">
+                <div class="alert alert-light shadow-sm">
+                    ✨ Hiện chưa có thông tin cho hạng mục này. Dữ liệu sẽ được cập nhật sớm nhất!
+                </div>
+            </div>
+        <% } %>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

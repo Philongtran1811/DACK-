@@ -2,53 +2,220 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Hệ thống Quản trị - Hotel Pro</title>
+    <title>Quản trị Hệ thống - Hotel Pro</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; font-family: 'Segoe UI', sans-serif; }
+        .stat-card { transition: 0.3s; border: none; border-radius: 15px; }
+        .stat-card:hover { transform: translateY(-5px); }
+        .nav-tabs .nav-link { color: #495057; font-weight: bold; border: none; }
+        .nav-tabs .nav-link.active { color: #0d6efd; border-bottom: 3px solid #0d6efd; background: none; }
+        .chart-container { min-height: 250px; }
+        .navbar { box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .list-group-item.active { background-color: #212529; border-color: #212529; }
+    </style>
 </head>
-<body class="bg-light">
-    <nav class="navbar navbar-dark bg-dark mb-4">
+<body>
+    <input type="hidden" id="bookingDataRaw" value='<%- JSON.stringify(bookingMonthlyData) %>'>
+
+    <nav class="navbar navbar-dark bg-dark mb-4 sticky-top shadow">
         <div class="container">
-            <a class="navbar-brand" href="/">🏨 ADMIN PANEL</a>
-            <span class="navbar-text">Xin chào, <%= user.username %></span>
+            <a class="navbar-brand fw-bold" href="/">🏨 HOTEL PRO ADMIN</a>
+            <span class="navbar-text text-light">Xin chào, <b><%= user.username %></b></span>
         </div>
     </nav>
 
-    <div class="container">
+    <div class="container pb-5">
         <div class="row">
             <div class="col-md-3">
-                <div class="list-group shadow-sm">
-                    <a href="/admin/dashboard" class="list-group-item list-group-item-action active">Tổng quan</a>
-                    <a href="/rooms" class="list-group-item list-group-item-action">Quản lý phòng</a>
-                    <a href="/room-types" class="list-group-item list-group-item-action">Loại phòng</a>
-                    <a href="/manage/bookings" class="list-group-item list-group-item-action">Đơn đặt hàng</a>
-                    <a href="/api/auth/logout" class="list-group-item list-group-item-action text-danger">Đăng xuất</a>
+                <div class="list-group shadow-sm mb-4">
+                    <a href="/admin/dashboard" class="list-group-item list-group-item-action active">📊 Tổng quan & Dịch vụ</a>
+                    <a href="/rooms" class="list-group-item list-group-item-action">🛌 Quản lý phòng</a>
+                    <a href="/room-types" class="list-group-item list-group-item-action">🧾 Loại phòng</a>
+                    <a href="/manage/bookings" class="list-group-item list-group-item-action">📅 Đơn đặt phòng</a>
+                    <a href="/api/auth/logout" class="list-group-item list-group-item-action text-danger">🚪 Đăng xuất</a>
                 </div>
             </div>
 
             <div class="col-md-9">
-                <h2 class="fw-bold mb-4">Thống kê hệ thống</h2>
-                <div class="row g-3">
+                
+                <div class="row g-3 mb-4">
                     <div class="col-md-4">
-                        <div class="card bg-primary text-white p-3 shadow border-0">
-                            <h3><%= stats.totalRooms %></h3>
-                            <p>Tổng số phòng</p>
+                        <div class="card bg-primary text-white p-3 stat-card shadow-sm mb-3">
+                            <h3 class="fw-bold"><%= stats.totalRooms %></h3>
+                            <p class="mb-0 small opacity-75">Tổng số phòng</p>
+                        </div>
+                        <div class="card bg-success text-white p-3 stat-card shadow-sm mb-3">
+                            <h3 class="fw-bold"><%= stats.totalBookings %></h3>
+                            <p class="mb-0 small opacity-75">Tổng số đơn hàng</p>
+                        </div>
+                        <div class="card bg-warning text-dark p-3 stat-card shadow-sm">
+                            <h3 class="fw-bold"><%= stats.totalStaff %></h3>
+                            <p class="mb-0 small opacity-75">Nhân viên lễ tân</p>
                         </div>
                     </div>
-                    <div class="col-md-4">
-                        <div class="card bg-success text-white p-3 shadow border-0">
-                            <h3><%= stats.totalBookings %></h3>
-                            <p>Đơn đặt phòng</p>
+                    <div class="col-md-8">
+                        <div class="card shadow-sm border-0 h-100">
+                            <div class="card-header bg-white fw-bold py-3">
+                                📈 Thống kê lượng đơn tiếp nhận (2026)
+                            </div>
+                            <div class="card-body chart-container">
+                                <canvas id="orderChart"></canvas>
+                            </div>
                         </div>
                     </div>
-                    <div class="col-md-4">
-                        <div class="card bg-warning text-dark p-3 shadow border-0">
-                            <h3><%= stats.totalStaff %></h3>
-                            <p>Nhân viên</p>
+                </div>
+
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-white fw-bold py-3">➕ Thêm Dịch Vụ Mới</div>
+                    <div class="card-body">
+                        <form id="addServiceForm" class="row g-2">
+                            <div class="col-md-3">
+                                <select class="form-select" id="serviceType" required>
+                                    <option value="foods">🍔 Đồ ăn</option>
+                                    <option value="gyms">🏋️‍♂️ Gym</option>
+                                    <option value="spas">🧖‍♀️ Spa</option>
+                                    <option value="swims">🏊‍♂️ Hồ bơi</option>
+                                    <option value="transports">🚗 Vận chuyển</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <input type="text" class="form-control" id="serviceName" placeholder="Tên dịch vụ..." required>
+                            </div>
+                            <div class="col-md-4">
+                                <input type="text" class="form-control" id="serviceImage" placeholder="Link ảnh (để trống tự lấy)...">
+                            </div>
+                            <div class="col-md-2">
+                                <button type="submit" class="btn btn-primary w-100 fw-bold">THÊM</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm border-0">
+                    <div class="card-body p-0">
+                        <ul class="nav nav-tabs px-3 pt-3 bg-light" id="serviceTabs">
+                            <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-foods">Food</button></li>
+                            <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-gyms">Gym</button></li>
+                            <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-spas">Spa</button></li>
+                            <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-swims">Swim</button></li>
+                            <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-transports">Transport</button></li>
+                        </ul>
+                        <div class="tab-content p-3 text-center">
+                            <% ['foods', 'gyms', 'spas', 'swims', 'transports'].forEach((type, index) => { %>
+                                <div class="tab-pane fade <%= index === 0 ? 'show active' : '' %>" id="tab-<%= type %>">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover align-middle border-top">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th style="width: 80px;">Ảnh</th>
+                                                    <th>Tên dịch vụ</th>
+                                                    <th class="text-end">Hành động</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="list-<%= type %>"></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            <% }) %>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        // --- 📊 XỬ LÝ BIỂU ĐỒ ---
+        const ctx = document.getElementById('orderChart').getContext('2d');
+        
+        // Đọc dữ liệu từ thẻ ẩn (Đã dùng JSON.parse để đảm bảo mảng sạch)
+        const rawValue = document.getElementById('bookingDataRaw').value;
+        const bookingData = JSON.parse(rawValue); 
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6'],
+                datasets: [{
+                    label: 'Số đơn hàng tiếp nhận',
+                    data: bookingData,
+                    backgroundColor: '#0d6efd',
+                    borderRadius: 8,
+                }]
+            },
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false,
+                scales: { 
+                    y: { 
+                        beginAtZero: true, 
+                        ticks: { stepSize: 1 } 
+                    } 
+                },
+                plugins: { legend: { display: false } }
+            }
+        });
+
+        // --- 🛠️ LOGIC QUẢN LÝ DỊCH VỤ (API) ---
+        async function loadServices(type) {
+            try {
+                const res = await fetch(`/api/${type}`);
+                const data = await res.json();
+                const tbody = document.getElementById(`list-${type}`);
+                
+                if (data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted py-3">Chưa có dữ liệu</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = data.map(item => `
+                    <tr>
+                        <td><img src="${item.image}" width="60" height="45" class="rounded shadow-sm" style="object-fit:cover"></td>
+                        <td class="fw-bold text-start ps-3">${item.name}</td>
+                        <td class="text-end">
+                            <button class="btn btn-outline-danger btn-sm rounded-pill px-3" onclick="deleteService('${type}', '${item._id}')">🗑️ Xóa</button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (err) {
+                console.error("Lỗi khi load " + type, err);
+            }
+        }
+
+        async function deleteService(type, id) {
+            if (confirm('Nhóm chắc chắn muốn xóa dịch vụ này chứ?')) {
+                const res = await fetch(`/api/${type}/${id}`, { method: 'DELETE' });
+                if (res.ok) loadServices(type);
+            }
+        }
+
+        document.getElementById('addServiceForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const type = document.getElementById('serviceType').value;
+            const name = document.getElementById('serviceName').value;
+            const image = document.getElementById('serviceImage').value;
+
+            const res = await fetch(`/api/${type}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, image })
+            });
+
+            if (res.ok) {
+                e.target.reset();
+                loadServices(type);
+                alert('Thêm thành công!');
+            }
+        });
+
+        // Khởi động load 5 tab khi trang tải xong
+        window.onload = () => {
+            ['foods', 'gyms', 'spas', 'swims', 'transports'].forEach(loadServices);
+        };
+    </script>
 </body>
 </html>

@@ -18,10 +18,10 @@
         }
         .main-card { 
             background: white; 
-            padding: 60px 40px; 
+            padding: 40px 40px; 
             border-radius: 20px; 
             box-shadow: 0 10px 30px rgba(0,0,0,0.15); 
-            margin-top: 50px; 
+            margin-top: 30px; 
             text-align: center; 
             animation: fadeIn 0.8s ease-in-out;
         }
@@ -30,19 +30,34 @@
             to { opacity: 1; transform: translateY(0); }
         }
         .action-btn {
-            min-width: 200px;
-            margin: 10px;
-            padding: 15px 25px;
+            min-width: 180px;
+            margin: 8px;
+            padding: 12px 20px;
             font-weight: bold;
             border-radius: 12px;
             transition: all 0.3s ease;
             text-transform: uppercase;
             letter-spacing: 1px;
+            font-size: 0.9rem;
         }
         .action-btn:hover {
             transform: translateY(-5px);
             box-shadow: 0 8px 15px rgba(0,0,0,0.2);
         }
+        .nav-item .dropdown-menu {
+            border-radius: 15px;
+            border: none;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            padding: 10px;
+            min-width: 250px;
+        }
+        .dropdown-item {
+            padding: 10px 15px;
+            border-radius: 10px;
+            transition: 0.2s;
+        }
+        .dropdown-item:hover { background-color: #f8f9fa; }
+        
         .group-name {
             color: #64748b;
             font-size: 1.1rem;
@@ -71,6 +86,19 @@
                 <% if (user) { %>
                     <li class="nav-item"><a class="nav-link" href="/rooms">Phòng</a></li>
                     <li class="nav-item"><a class="nav-link" href="/room-types">Loại phòng</a></li>
+                    
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle text-info fw-bold" href="#" role="button" data-bs-toggle="dropdown">
+                            ✨ Dịch vụ
+                        </a>
+                        <ul class="dropdown-menu shadow">
+                            <li><a class="dropdown-item" href="/view/foods">🍔 Đồ ăn (Room Service)</a></li>
+                            <li><a class="dropdown-item" href="/view/gyms">🏋️‍♂️ Phòng Gym</a></li>
+                            <li><a class="dropdown-item" href="/view/spas">🧖‍♀️ Spa & Massage</a></li>
+                            <li><a class="dropdown-item" href="/view/swims">🏊‍♂️ Hồ bơi</a></li>
+                            <li><a class="dropdown-item" href="/view/transports">🚗 Đưa đón sân bay</a></li>
+                        </ul>
+                    </li>
                 <% } %>
             </ul>
 
@@ -101,7 +129,7 @@
         <h1 class="display-4 fw-bold text-primary mb-3">Hệ Thống Quản Lý Khách Sạn</h1>
         <p class="group-name">Thực hiện bởi: <b>Long, Trường, Thành, Đạt, Vỹ, Việt, Nhiên</b></p>
         
-        <hr class="my-5 mx-auto" style="width: 30%; border-top: 2px solid #e2e8f0;">
+        <hr class="my-4 mx-auto" style="width: 30%; border-top: 2px solid #e2e8f0;">
 
         <% if (user) { %>
             <div class="mb-4">
@@ -109,28 +137,24 @@
                 <span class="badge bg-secondary p-2 px-3 fs-6 ms-2">Quyền: <%= user.role || 'Thành viên' %></span>
             </div>
 
-            <div class="mt-5 d-flex justify-content-center flex-wrap">
-                
-                <a href="/rooms" class="btn btn-success action-btn shadow-sm">
-                    🏨 Danh sách phòng
-                </a>
+            <div class="d-flex justify-content-center flex-wrap">
+                <a href="/rooms" class="btn btn-success action-btn shadow-sm">🏨 Danh sách phòng</a>
+                <a href="/api/bookings/my-history" class="btn btn-info action-btn shadow-sm text-white">📜 Lịch sử đặt phòng</a>
+                <a href="/room-types" class="btn btn-warning action-btn shadow-sm text-dark">🧾 Loại phòng</a>
+                <a href="/profile" class="btn btn-outline-primary action-btn">👤 Trang cá nhân</a>
+            </div>
 
-                <a href="/api/bookings/my-history" class="btn btn-info action-btn shadow-sm text-white">
-                    📜 Lịch sử đặt phòng
-                </a>
-
-                <a href="/room-types" class="btn btn-warning action-btn shadow-sm text-dark">
-                    🧾 Loại phòng
-                </a>
-
-                <a href="/profile" class="btn btn-outline-primary action-btn">
-                    👤 Trang cá nhân
-                </a>
-
+            <h5 class="mt-5 mb-3 fw-bold text-secondary text-uppercase">Dịch vụ tiện ích</h5>
+            <div class="d-flex justify-content-center flex-wrap border p-3 rounded-4 bg-light">
+                <a href="/view/foods" class="btn btn-danger action-btn shadow-sm">🍔 Đồ ăn</a>
+                <a href="/view/gyms" class="btn btn-dark action-btn shadow-sm">🏋️‍♂️ Gym</a>
+                <a href="/view/spas" class="btn btn-primary action-btn shadow-sm" style="background-color: #6f42c1; border: none;">🧖‍♀️ Spa</a>
+                <a href="/view/swims" class="btn btn-info action-btn shadow-sm text-white">🏊‍♂️ Hồ bơi</a>
+                <a href="/view/transports" class="btn btn-secondary action-btn shadow-sm">🚗 Vận chuyển</a>
             </div>
 
             <p class="mt-5 text-muted fst-italic">
-                💡 Gợi ý: Bạn có thể vào mục <b>Lịch sử</b> để xem lại các phòng đã ở và để lại đánh giá ⭐
+                💡 Tất cả dịch vụ của khách sạn HOTEL PRO của chúng tôi đều được sử dụng miễn phí ⭐
             </p>
 
         <% } else { %>

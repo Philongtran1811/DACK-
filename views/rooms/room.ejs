@@ -1,7 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html lang="vi">
 <head>
-    <title>Quản lý & Đặt phòng</title>
+    <meta charset="UTF-8">
+    <title>Quản lý & Đặt phòng - Hotel Pro</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background: #f4f7fb; padding: 30px; }
@@ -23,6 +24,8 @@
         }
 
         .btn-add { background: #16a34a; color: white; width: 100%; }
+        .btn-add:hover { background: #15803d; }
+        
         .room-list {
             display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 25px;
         }
@@ -34,6 +37,7 @@
 
         .room-card img { width: 100%; height: 180px; object-fit: cover; }
         .room-body { padding: 20px; flex-grow: 1; }
+        .title { font-weight: bold; font-size: 18px; margin-bottom: 5px; }
         .price { color: #e11d48; font-weight: bold; font-size: 18px; }
 
         .status {
@@ -41,43 +45,44 @@
         }
         .AVAILABLE { background: #dcfce7; color: #166534; }
         .BOOKED { background: #fee2e2; color: #991b1b; }
+        .MAINTENANCE { background: #fef3c7; color: #92400e; }
 
-        /* --- PHẦN REVIEW --- */
         .rating-box { margin-top: 10px; color: #f59e0b; font-weight: bold; }
         .reviews-list {
             font-size: 12px; background: #f8fafc; padding: 10px; border-radius: 8px; 
-            margin: 10px 0; max-height: 80px; overflow-y: auto; border: 1px solid #eee;
+            margin: 10px 0; max-height: 100px; overflow-y: auto; border: 1px solid #eee;
         }
         .review-form-box {
             background: #fffbeb; border: 1px dashed #f59e0b; padding: 12px; border-radius: 10px; margin-top: 10px;
         }
 
         .actions { margin-top: 15px; display: flex; gap: 8px; }
-        .btn { flex: 1; text-align: center; padding: 8px; border-radius: 8px; text-decoration: none; color: white; font-size: 13px; }
+        .btn { flex: 1; text-align: center; padding: 8px; border-radius: 8px; text-decoration: none; color: white; font-size: 13px; font-weight: bold; }
         .book { background: #4f46e5; }
         .edit { background: #f59e0b; }
         .delete { background: #ef4444; }
 
-        #editBox { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 320px; background: white; padding: 20px; border-radius: 12px; display: none; z-index: 100; }
-        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); display: none; z-index: 90; }
+        #editBox { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 350px; background: white; padding: 25px; border-radius: 12px; display: none; z-index: 100; box-shadow: 0 20px 25px rgba(0,0,0,0.2); }
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; z-index: 90; }
     </style>
 </head>
 
 <body>
 
-    <h2>🏨 Quản lý & Đặt phòng</h2>
+    <h2>🏨 Hệ Thống Quản Lý Phòng</h2>
 
     <div class="form-box">
-        <h3>Thêm phòng</h3>
+        <h3>➕ Thêm phòng mới</h3>
         <form id="addForm">
-            <input name="roomCode" placeholder="Mã phòng" required>
-            <select name="roomType">
+            <input type="text" name="roomCode" placeholder="Mã phòng (Ví dụ: P101)" required>
+            <select name="roomType" required>
+                <option value="" disabled selected>-- Chọn loại phòng --</option>
                 <% roomTypes.forEach(rt => { %>
-                    <option value="<%= rt._id %>"><%= rt.name %> - <%= rt.price %> VND</option>
+                    <option value="<%= rt._id %>"><%= rt.name %> - <%= rt.price.toLocaleString() %>đ</option>
                 <% }) %>
             </select>
-            <input name="image" placeholder="Link ảnh phòng">
-            <button class="btn-add">Thêm phòng</button>
+            <input type="text" name="image" placeholder="Link ảnh phòng (URL)">
+            <button type="submit" class="btn-add">Thêm phòng ngay</button>
         </form>
     </div>
 
@@ -85,20 +90,21 @@
 
     <div class="room-list">
     <% rooms.forEach(room => { %>
-        <div class="room-card">
-            <img src="<%= room.image || 'https://via.placeholder.com/300x180' %>">
+        <div class="room-card" id="card-<%= room._id %>">
+            <img src="<%= room.image || 'https://via.placeholder.com/300x180?text=No+Image' %>" alt="Room Image">
             <div class="room-body">
                 <div class="title">Phòng <%= room.roomCode %></div>
-                <div style="font-size: 14px; color: #64748b;"><%= room.roomType?.name %></div>
+                <div style="font-size: 14px; color: #64748b; margin-bottom: 5px;"><%= room.roomType?.name || 'Chưa phân loại' %></div>
                 <div class="price"><%= room.roomType?.price?.toLocaleString() %> VND</div>
                 <div class="status <%= room.status %>"><%= room.status %></div>
 
-                <div class="rating-box"> ⭐ <span id="avg-<%= room._id %>">0</span>/5 </div>
+                <div class="rating-box"> ⭐ Trung bình: <span id="avg-<%= room._id %>">0</span>/5 </div>
+                <div class="reviews-list" id="reviews-<%= room._id %>">
+                    <p class="text-muted" style="font-style: italic;">Chưa có đánh giá nào...</p>
+                </div>
 
-                <div class="reviews-list" id="reviews-<%= room._id %>"></div>
-
-                <div class="review-form-box" id="review-form-container-<%= room._id %>">
-                    <b style="font-size: 12px; display: block; margin-bottom: 5px;">Viết đánh giá:</b>
+                <div class="review-form-box">
+                    <b style="font-size: 12px; display: block; margin-bottom: 5px;">Đánh giá của bạn:</b>
                     <select id="rating-input-<%= room._id %>" style="padding: 5px; font-size: 12px; margin-bottom: 5px;">
                         <option value="5">⭐⭐⭐⭐⭐ 5 điểm</option>
                         <option value="4">⭐⭐⭐⭐ 4 điểm</option>
@@ -106,15 +112,15 @@
                         <option value="2">⭐⭐ 2 điểm</option>
                         <option value="1">⭐ 1 điểm</option>
                     </select>
-                    <input type="text" id="comment-input-<%= room._id %>" placeholder="Cảm nhận của bạn..." style="padding: 5px; font-size: 12px; margin-bottom: 5px;">
-                    <button onclick="submitReview('<%= room._id %>')" style="background: #4f46e5; color: white; padding: 5px; font-size: 12px; width: 100%;">Gửi đánh giá</button>
+                    <input type="text" id="comment-input-<%= room._id %>" placeholder="Nhập cảm nhận..." style="padding: 5px; font-size: 12px; margin-bottom: 5px;">
+                    <button onclick="submitReview('<%= room._id %>')" style="background: #4f46e5; color: white; padding: 5px; font-size: 12px; width: 100%;">Gửi Review</button>
                 </div>
 
                 <div class="actions">
                     <% if (room.status === "AVAILABLE") { %>
                         <a href="/booking/<%= room._id %>" class="btn book">Đặt phòng</a>
                     <% } else { %>
-                        <button class="btn" style="background:#9ca3af" disabled>Hết chỗ</button>
+                        <button class="btn" style="background:#9ca3af; cursor: not-allowed;" disabled>Hết phòng</button>
                     <% } %>
                     <button class="btn edit" onclick="showEdit('<%= room._id %>', '<%= room.roomCode %>', '<%= room.roomType?._id %>', '<%= room.image %>', '<%= room.status %>')">Sửa</button>
                     <button class="btn delete" onclick="deleteRoom('<%= room._id %>')">Xóa</button>
@@ -126,47 +132,98 @@
 
     <div class="overlay" id="overlay" onclick="closeEdit()"></div>
     <div id="editBox">
-        <h3>Cập nhật phòng</h3>
+        <h3 style="margin-bottom: 15px;">🛠️ Cập nhật thông tin</h3>
         <form id="editForm">
-            <input name="roomCode" id="editCode">
-            <select name="roomType" id="editType">
+            <label style="font-size: 12px; font-weight: bold;">Mã phòng:</label>
+            <input name="roomCode" id="editCode" required>
+            
+            <label style="font-size: 12px; font-weight: bold;">Loại phòng:</label>
+            <select name="roomType" id="editType" required>
                 <% roomTypes.forEach(rt => { %>
                     <option value="<%= rt._id %>"><%= rt.name %></option>
                 <% }) %>
             </select>
+            
+            <label style="font-size: 12px; font-weight: bold;">Link ảnh:</label>
             <input name="image" id="editImage">
+            
+            <label style="font-size: 12px; font-weight: bold;">Trạng thái:</label>
             <select name="status" id="editStatus">
                 <option value="AVAILABLE">AVAILABLE</option>
                 <option value="BOOKED">BOOKED</option>
                 <option value="MAINTENANCE">MAINTENANCE</option>
             </select>
-            <button class="btn-add">Lưu thay đổi</button>
+            
+            <button type="submit" class="btn-add" style="background: #f59e0b; margin-top: 10px;">Lưu thay đổi</button>
+            <button type="button" onclick="closeEdit()" style="background: #64748b; color: white; width: 100%; margin-top: 5px; padding: 10px; border-radius: 8px;">Hủy</button>
         </form>
     </div>
 
     <script>
-        // 1. Tải Review và tính điểm trung bình
+        // --- 1. KHI TRANG LOAD XONG ---
+        document.addEventListener("DOMContentLoaded", () => {
+            console.log("🚀 Trang web đã sẵn sàng!");
+
+            // Tự động load Review cho từng phòng
+            const dataHolder = document.getElementById("data-holder");
+            if (dataHolder) {
+                const rooms = JSON.parse(dataHolder.dataset.rooms || "[]");
+                rooms.forEach(room => loadReviews(room._id));
+            }
+
+            // Xử lý Sự kiện THÊM PHÒNG
+            const addForm = document.getElementById("addForm");
+            if (addForm) {
+                addForm.addEventListener("submit", async (e) => {
+                    e.preventDefault();
+                    const formData = {
+                        roomCode: addForm.roomCode.value,
+                        roomType: addForm.roomType.value,
+                        image: addForm.image.value
+                    };
+
+                    try {
+                        const res = await fetch("/api/rooms", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify(formData)
+                        });
+                        if (res.ok) {
+                            alert("✅ Đã thêm phòng mới thành công!");
+                            location.reload();
+                        } else {
+                            alert("❌ Lỗi khi thêm phòng!");
+                        }
+                    } catch (err) { alert("❌ Lỗi kết nối Server!"); }
+                });
+            }
+        });
+
+        // --- 2. XỬ LÝ REVIEWS ---
         async function loadReviews(roomId) {
             try {
                 const res = await fetch("/api/reviews/room/" + roomId);
                 const data = await res.json();
-                let total = 0;
-                let html = "";
-                data.forEach(r => {
-                    total += r.rating;
-                    html += `<div><b>${r.user?.name || 'Khách'}:</b> ${r.comment} (${r.rating}⭐)</div>`;
-                });
                 if (data.length > 0) {
+                    let total = 0;
+                    let html = "";
+                    data.forEach(r => {
+                        total += r.rating;
+                        html += `<div style="margin-bottom: 5px; border-bottom: 1px solid #eee; padding-bottom: 2px;">
+                                    <b>${r.user?.name || 'Khách'}:</b> ${r.comment} (${r.rating}⭐)
+                                 </div>`;
+                    });
                     document.getElementById("avg-" + roomId).innerText = (total / data.length).toFixed(1);
                     document.getElementById("reviews-" + roomId).innerHTML = html;
                 }
-            } catch (err) { console.log(err); }
+            } catch (err) { console.log("Lỗi load review:", err); }
         }
 
-        // 2. Gửi Review mới
         async function submitReview(roomId) {
             const rating = document.getElementById("rating-input-" + roomId).value;
             const comment = document.getElementById("comment-input-" + roomId).value;
+            if (!comment) return alert("Vui lòng nhập bình luận!");
+
             try {
                 const res = await fetch("/api/reviews", {
                     method: "POST",
@@ -174,42 +231,20 @@
                     body: JSON.stringify({ roomId, rating, comment })
                 });
                 const result = await res.json();
-                alert(result.message);
-                if (res.ok) location.reload();
-            } catch (err) { alert("Lỗi kết nối server!"); }
+                if (res.ok) {
+                    alert("✅ Đánh giá thành công!");
+                    location.reload();
+                } else {
+                    alert("❌ " + (result.message || "Lỗi khi gửi đánh giá"));
+                }
+            } catch (err) { alert("Lỗi kết nối!"); }
         }
 
-        // 3. Khởi chạy
-        document.addEventListener("DOMContentLoaded", () => {
-            const raw = document.getElementById("data-holder").dataset.rooms;
-            const rooms = JSON.parse(raw || "[]");
-            rooms.forEach(room => loadReviews(room._id));
-        });
+        // --- 3. XỬ LÝ SỬA & XÓA ---
+        let currentEditId = null;
 
-        // --- CÁC HÀM QUẢN LÝ ---
-        document.getElementById("addForm").addEventListener("submit", async (e) => {
-            e.preventDefault();
-            const res = await fetch("/api/rooms", {
-                method: "POST",
-                headers: {"Content-Type":"application/json"},
-                body: JSON.stringify({
-                    roomCode: e.target.roomCode.value,
-                    roomType: e.target.roomType.value,
-                    image: e.target.image.value
-                })
-            });
-            if (res.ok) location.reload();
-        });
-
-        async function deleteRoom(id) {
-            if (!confirm("Xóa phòng này?")) return;
-            const res = await fetch("/api/rooms/" + id, { method: "DELETE" });
-            if (res.ok) location.reload();
-        }
-
-        let currentId;
         function showEdit(id, code, type, image, status) {
-            currentId = id;
+            currentEditId = id;
             document.getElementById("overlay").style.display = "block";
             document.getElementById("editBox").style.display = "block";
             document.getElementById("editCode").value = code;
@@ -217,6 +252,7 @@
             document.getElementById("editImage").value = image;
             document.getElementById("editStatus").value = status;
         }
+
         function closeEdit() {
             document.getElementById("overlay").style.display = "none";
             document.getElementById("editBox").style.display = "none";
@@ -224,18 +260,34 @@
 
         document.getElementById("editForm").addEventListener("submit", async (e) => {
             e.preventDefault();
-            const res = await fetch("/api/rooms/" + currentId, {
-                method: "PUT",
-                headers: {"Content-Type":"application/json"},
-                body: JSON.stringify({
-                    roomCode: e.target.roomCode.value,
-                    roomType: e.target.roomType.value,
-                    image: e.target.image.value,
-                    status: e.target.status.value
-                })
-            });
-            if (res.ok) location.reload();
+            const editForm = e.target;
+            const updateData = {
+                roomCode: editForm.roomCode.value,
+                roomType: editForm.roomType.value,
+                image: editForm.image.value,
+                status: editForm.status.value
+            };
+
+            try {
+                const res = await fetch("/api/rooms/" + currentEditId, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(updateData)
+                });
+                if (res.ok) {
+                    alert("✅ Đã cập nhật thành công!");
+                    location.reload();
+                }
+            } catch (err) { alert("Lỗi cập nhật!"); }
         });
+
+        async function deleteRoom(id) {
+            if (!confirm("⚠️ Bạn có chắc chắn muốn XÓA phòng này không?")) return;
+            try {
+                const res = await fetch("/api/rooms/" + id, { method: "DELETE" });
+                if (res.ok) location.reload();
+            } catch (err) { alert("Lỗi khi xóa!"); }
+        }
     </script>
 </body>
 </html>

@@ -71,34 +71,38 @@ router.post("/", async (req, res) => {
 router.put("/:id", async (req, res) => {
     try {
         const { roomCode, roomType, image, status } = req.body;
+        let updateData = {};
 
-        if (!roomCode || roomCode.trim() === "") {
-            return res.status(400).json({ message: "Mã phòng không hợp lệ" });
+        // 1. Nếu có gửi roomCode (khi sửa ở trang Quản lý phòng) thì mới kiểm tra
+        if (roomCode !== undefined) {
+            if (roomCode.trim() === "") return res.status(400).json({ message: "Mã phòng không hợp lệ" });
+            updateData.roomCode = roomCode.trim();
         }
 
-        const type = await RoomType.findById(roomType);
-        if (!type) {
-            return res.status(400).json({ message: "Loại phòng không tồn tại" });
+        // 2. Nếu có gửi roomType thì mới kiểm tra
+        if (roomType) {
+            const type = await RoomType.findById(roomType);
+            if (!type) return res.status(400).json({ message: "Loại phòng không tồn tại" });
+            updateData.roomType = roomType;
         }
 
+        // 3. Các trường khác
+        if (image !== undefined) updateData.image = image.trim() !== "" ? image : undefined;
+        if (status !== undefined) updateData.status = status;
+
+        // 4. Thực hiện cập nhật
         const updated = await Room.findByIdAndUpdate(
             req.params.id,
-            {
-                roomCode: roomCode.trim(),
-                roomType,
-                image: image && image.trim() !== "" ? image : undefined,
-                status
-            },
+            updateData,
             { new: true, runValidators: true }
         );
 
-        if (!updated) {
-            return res.status(404).json({ message: "Không tìm thấy phòng" });
-        }
+        if (!updated) return res.status(404).json({ message: "Không tìm thấy phòng" });
 
         res.json({ message: "Cập nhật thành công", data: updated });
 
     } catch (err) {
+        console.log(err);
         res.status(500).json({ message: "Lỗi server" });
     }
 });
