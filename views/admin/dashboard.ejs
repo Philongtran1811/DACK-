@@ -41,15 +41,15 @@
                 
                 <div class="row g-3 mb-4">
                     <div class="col-md-4">
-                        <div class="card bg-primary text-white p-3 stat-card shadow-sm mb-3">
+                        <div class="card bg-primary text-white p-3 stat-card shadow-sm mb-3 text-center">
                             <h3 class="fw-bold"><%= stats.totalRooms %></h3>
                             <p class="mb-0 small opacity-75">Tổng số phòng</p>
                         </div>
-                        <div class="card bg-success text-white p-3 stat-card shadow-sm mb-3">
+                        <div class="card bg-success text-white p-3 stat-card shadow-sm mb-3 text-center">
                             <h3 class="fw-bold"><%= stats.totalBookings %></h3>
                             <p class="mb-0 small opacity-75">Tổng số đơn hàng</p>
                         </div>
-                        <div class="card bg-warning text-dark p-3 stat-card shadow-sm">
+                        <div class="card bg-warning text-dark p-3 stat-card shadow-sm text-center">
                             <h3 class="fw-bold"><%= stats.totalStaff %></h3>
                             <p class="mb-0 small opacity-75">Nhân viên lễ tân</p>
                         </div>
@@ -77,7 +77,7 @@
                                     <option value="spas">🧖‍♀️ Spa</option>
                                     <option value="swims">🏊‍♂️ Hồ bơi</option>
                                     <option value="transports">🚗 Vận chuyển</option>
-                                </select>
+                                    <option value="billiards">🎱 Bida</option> </select>
                             </div>
                             <div class="col-md-3">
                                 <input type="text" class="form-control" id="serviceName" placeholder="Tên dịch vụ..." required>
@@ -101,7 +101,7 @@
                             <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-spas">Spa</button></li>
                             <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-swims">Swim</button></li>
                             <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-transports">Transport</button></li>
-                        </ul>
+                            <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-billiards">Billiard</button></li> </ul>
                         <div class="tab-content p-3 text-center">
                             <div class="tab-pane fade show active" id="tab-users">
                                 <div class="table-responsive">
@@ -119,8 +119,7 @@
                                 </div>
                             </div>
 
-                            <% ['foods', 'gyms', 'spas', 'swims', 'transports'].forEach((type, index) => { %>
-                                <div class="tab-pane fade" id="tab-<%= type %>">
+                            <% ['foods', 'gyms', 'spas', 'swims', 'transports', 'billiards'].forEach((type) => { %> <div class="tab-pane fade" id="tab-<%= type %>">
                                     <div class="table-responsive">
                                         <table class="table table-hover align-middle border-top">
                                             <thead class="table-light">
@@ -290,7 +289,7 @@
 
         window.onload = () => {
             loadUsers();
-            ['foods', 'gyms', 'spas', 'swims', 'transports'].forEach(loadServices);
+            ['foods', 'gyms', 'spas', 'swims', 'transports', 'billiards'].forEach(loadServices); // ✅ ĐÃ THÊM BIDA VÀO ĐÂY
         };
     </script>
 </body>

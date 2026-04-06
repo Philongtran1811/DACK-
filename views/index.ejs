@@ -97,7 +97,7 @@
                             <li><a class="dropdown-item" href="/view/spas">🧖‍♀️ Spa & Massage</a></li>
                             <li><a class="dropdown-item" href="/view/swims">🏊‍♂️ Hồ bơi</a></li>
                             <li><a class="dropdown-item" href="/view/transports">🚗 Đưa đón sân bay</a></li>
-                        </ul>
+                            <li><a class="dropdown-item" href="/view/billiards">🎱 Giải trí Bida</a></li> </ul>
                     </li>
                 <% } %>
             </ul>
@@ -109,6 +109,9 @@
                             Xin chào, <b><%= user.name || user.username %></b>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end shadow">
+                            <% if (user.role === 'ADMIN') { %>
+                                <li><a class="dropdown-item text-success fw-bold" href="/admin/dashboard">📊 Quản trị hệ thống</a></li>
+                            <% } %>
                             <li><a class="dropdown-item" href="/profile">👤 Trang cá nhân</a></li>
                             <li><a class="dropdown-item" href="/api/bookings/my-history">📜 Lịch sử đặt phòng</a></li>
                             <li><hr class="dropdown-divider"></li>
@@ -151,7 +154,7 @@
                 <a href="/view/spas" class="btn btn-primary action-btn shadow-sm" style="background-color: #6f42c1; border: none;">🧖‍♀️ Spa</a>
                 <a href="/view/swims" class="btn btn-info action-btn shadow-sm text-white">🏊‍♂️ Hồ bơi</a>
                 <a href="/view/transports" class="btn btn-secondary action-btn shadow-sm">🚗 Vận chuyển</a>
-            </div>
+                <a href="/view/billiards" class="btn btn-warning action-btn shadow-sm text-dark" style="background-color: #ffc107; border: none;">🎱 Bida</a> </div>
 
             <p class="mt-5 text-muted fst-italic">
                 💡 Tất cả dịch vụ của khách sạn HOTEL PRO của chúng tôi đều được sử dụng miễn phí ⭐

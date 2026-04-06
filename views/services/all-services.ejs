@@ -5,6 +5,7 @@
     <title><%= title %> - Hotel Pro</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
+        body { background-color: #f8f9fa; }
         .service-card { 
             border: none; 
             border-radius: 20px; 
@@ -17,7 +18,7 @@
             transform: translateY(-10px); 
             box-shadow: 0 15px 30px rgba(0,0,0,0.1); 
         }
-        .img-container { height: 250px; overflow: hidden; }
+        .img-container { height: 250px; overflow: hidden; background: #eee; }
         .img-container img { 
             width: 100%; 
             height: 100%; 
@@ -28,53 +29,80 @@
             transform: scale(1.1);
         }
         .card-title {
-            color: #2c3e50;
-            letter-spacing: 1px;
-            margin-bottom: 15px;
+            color: #1e293b;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+        }
+        .btn-home {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: 0.3s;
+        }
+        .btn-home:hover {
+            background: #fff;
+            color: #212529 !important;
         }
     </style>
 </head>
-<body class="bg-light">
+<body>
 
-<nav class="navbar navbar-dark bg-dark mb-4 shadow-sm">
+<nav class="navbar navbar-dark bg-dark mb-4 shadow-sm sticky-top">
     <div class="container">
-        <a class="navbar-brand fw-bold" href="/">🏨 HOTEL PRO / <%= title %></a>
-        <a href="/" class="btn btn-outline-light btn-sm rounded-pill px-3">Quay lại trang chủ</a>
+        <a class="navbar-brand fw-bold" href="/">🏨 HOTEL PRO <span class="text-primary-emphasis mx-2">|</span> <%= title %></a>
+        <div class="nav-links">
+            <a href="/" class="btn btn-home btn-sm text-white rounded-pill px-4">🏠 Trang chủ</a>
+        </div>
     </div>
 </nav>
 
 <div class="container pb-5">
-    <div class="text-center mb-5">
-        <h1 class="fw-bold display-5"><%= title %></h1>
-        <div class="mx-auto mb-3" style="width: 60px; height: 4px; background: #0d6efd; border-radius: 2px;"></div>
-        <p class="text-muted fs-5">Trải nghiệm không gian và dịch vụ đẳng cấp 5 sao</p>
+    <div class="text-center mb-5 mt-4">
+        <h1 class="fw-bold display-5 text-dark"><%= title %></h1>
+        <div class="mx-auto mb-3" style="width: 80px; height: 5px; background: #0d6efd; border-radius: 10px;"></div>
+        <p class="text-muted fs-5">Tận hưởng dịch vụ đẳng cấp và không gian sang trọng tại khách sạn của chúng tôi</p>
     </div>
 
     <div class="row g-4">
         <% if (data && data.length > 0) { %>
             <% data.forEach(item => { %>
-                <div class="col-md-4 col-lg-4"> <div class="card h-100 service-card text-center">
+                <div class="col-md-4 col-lg-4"> 
+                    <div class="card h-100 service-card">
                         <div class="img-container">
-                            <img src="<%= item.image %>" alt="<%= item.name %>" onerror="this.src='https://via.placeholder.com/500x350?text=Premium+Service'">
+                            <img src="<%= item.image %>" 
+                                 alt="<%= item.name %>" 
+                                 onerror="this.src='https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=1000&auto=format&fit=crop'">
                         </div>
                         <div class="card-body p-4">
                             <h4 class="card-title fw-bold"><%= item.name %></h4>
-                            <p class="card-text text-muted">
-                                <%= item.description || 'Khám phá sự khác biệt và đẳng cấp trong từng chi tiết dịch vụ tại Hotel Pro.' %>
+                            <p class="card-text text-muted" style="line-height: 1.6;">
+                                <%= item.description || 'Khám phá sự khác biệt và đẳng cấp trong từng chi tiết dịch vụ tại Hotel Pro. Chúng tôi cam kết mang lại trải nghiệm tuyệt vời nhất.' %>
                             </p>
+                        </div>
+                        <div class="card-footer bg-white border-0 pb-4 px-4">
+                             <span class="badge rounded-pill bg-light text-primary px-3 py-2">⭐ Premium Service</span>
                         </div>
                     </div>
                 </div>
             <% }) %>
         <% } else { %>
             <div class="col-12 text-center py-5">
-                <div class="alert alert-light shadow-sm">
-                    ✨ Hiện chưa có thông tin cho hạng mục này. Dữ liệu sẽ được cập nhật sớm nhất!
+                <div class="p-5 border-2 border-dashed rounded-4 bg-white shadow-sm">
+                    <div class="fs-1 mb-3">✨</div>
+                    <h3 class="fw-bold text-dark">Sắp ra mắt!</h3>
+                    <p class="text-muted">Hạng mục <b><%= title %></b> hiện đang được chuẩn bị. Dữ liệu sẽ được cập nhật sớm nhất để phục vụ quý khách.</p>
+                    <a href="/" class="btn btn-primary mt-3 px-4 rounded-pill">Quay lại khám phá dịch vụ khác</a>
                 </div>
             </div>
         <% } %>
     </div>
 </div>
+
+<footer class="py-4 mt-5 bg-white border-top">
+    <div class="container text-center">
+        <small class="text-muted">© 2026 Hotel Pro System. Nhóm: Long, Trường, Thành, Đạt, Vỹ, Việt, Nhiên.</small>
+    </div>
+</footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>

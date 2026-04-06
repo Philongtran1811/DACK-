@@ -20,6 +20,7 @@ const Gym = require("./models/services/gym.model");
 const Spa = require("./models/services/spa.model");
 const Swim = require("./models/services/swim.model");
 const Transport = require("./models/services/transport.model");
+const Billiard = require("./models/services/billiard.model"); // ✅ THÊM MỚI BIDA
 
 // 🔐 3. Middleware Bảo mật
 const { checkUser, isStaff, isAdmin } = require("./middlewares/auth.middleware");
@@ -89,14 +90,12 @@ app.get('/manage/bookings', isStaff, async (req, res) => {
 // 👑 Trang Admin (Dashboard & Thống kê)
 app.get('/admin/dashboard', isAdmin, async (req, res) => {
     try {
-        // 1. Thống kê cơ bản
         const stats = {
             totalRooms: await Room.countDocuments(),
             totalBookings: await Booking.countDocuments(),
             totalStaff: await User.countDocuments({ role: 'RECEPTIONIST' })
         };
 
-        // 2. Thống kê số lượng đơn hàng theo tháng (năm 2026)
         const monthlyCounts = [];
         for (let m = 0; m < 6; m++) {
             const start = new Date(2026, m, 1);
@@ -143,6 +142,12 @@ app.get('/view/transports', async (req, res) => {
     res.render('services/all-services', { title: "Vận Chuyển", data, user: req.user });
 });
 
+// ✅ ROUTE XEM BIDA MỚI
+app.get('/view/billiards', async (req, res) => {
+    const data = await Billiard.find();
+    res.render('services/all-services', { title: "CLB Bida Giải Trí", data, user: req.user });
+});
+
 // 🔐 Auth
 app.get('/login', (req, res) => res.render('login', { user: req.user || null }));
 app.get('/register', (req, res) => res.render('register', { user: req.user || null }));
@@ -151,8 +156,7 @@ app.get('/register', (req, res) => res.render('register', { user: req.user || nu
 // ⚙️ 7. API ROUTES (Xử lý dữ liệu)
 // ==========================================
 
-// 👥 API QUẢN LÝ TÀI KHOẢN (ADMIN ONLY) - PHẦN THÊM MỚI
-// Lấy danh sách user
+// 👥 API QUẢN LÝ TÀI KHOẢN (ADMIN ONLY)
 app.get('/api/admin/users', isAdmin, async (req, res) => {
     try {
         const users = await User.find().select("-password");
@@ -160,7 +164,6 @@ app.get('/api/admin/users', isAdmin, async (req, res) => {
     } catch (err) { res.status(500).json({ message: "Lỗi" }); }
 });
 
-// Reset mật khẩu
 app.put('/api/admin/users/:id/reset-password', isAdmin, async (req, res) => {
     try {
         const { newPassword } = req.body;
@@ -170,7 +173,6 @@ app.put('/api/admin/users/:id/reset-password', isAdmin, async (req, res) => {
     } catch (err) { res.status(500).json({ message: "Lỗi" }); }
 });
 
-// Khóa/Mở khóa tài khoản
 app.put('/api/admin/users/:id/toggle-status', isAdmin, async (req, res) => {
     try {
         const user = await User.findById(req.params.id);
@@ -180,7 +182,6 @@ app.put('/api/admin/users/:id/toggle-status', isAdmin, async (req, res) => {
     } catch (err) { res.status(500).json({ message: "Lỗi" }); }
 });
 
-// Xóa tài khoản
 app.delete('/api/admin/users/:id', isAdmin, async (req, res) => {
     try {
         await User.findByIdAndDelete(req.params.id);
@@ -195,12 +196,13 @@ app.use('/api/room-types', require('./routes/roomTypes'));
 app.use('/api/reviews', require('./routes/review.routes'));
 app.use('/api/rooms', require('./routes/rooms'));
 
-// API Dịch vụ
+// API Dịch vụ (Đã thêm Bida)
 app.use('/api/foods', require('./routes/foods'));
 app.use('/api/gyms', require('./routes/gyms'));
 app.use('/api/spas', require('./routes/spas'));
 app.use('/api/swims', require('./routes/swims'));
 app.use('/api/transports', require('./routes/transports'));
+app.use('/api/billiards', require('./routes/billiards')); // ✅ API BIDA MỚI
 
 // 🛑 8. 404
 app.use((req, res) => {
