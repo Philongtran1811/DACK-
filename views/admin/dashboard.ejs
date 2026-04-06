@@ -95,15 +95,32 @@
                 <div class="card shadow-sm border-0">
                     <div class="card-body p-0">
                         <ul class="nav nav-tabs px-3 pt-3 bg-light" id="serviceTabs">
-                            <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-foods">Food</button></li>
+                            <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-users">👤 Tài khoản</button></li>
+                            <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-foods">Food</button></li>
                             <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-gyms">Gym</button></li>
                             <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-spas">Spa</button></li>
                             <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-swims">Swim</button></li>
                             <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-transports">Transport</button></li>
                         </ul>
                         <div class="tab-content p-3 text-center">
+                            <div class="tab-pane fade show active" id="tab-users">
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle border-top">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Username</th>
+                                                <th>Quyền</th>
+                                                <th>Trạng thái</th>
+                                                <th class="text-end">Hành động</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="list-users"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+
                             <% ['foods', 'gyms', 'spas', 'swims', 'transports'].forEach((type, index) => { %>
-                                <div class="tab-pane fade <%= index === 0 ? 'show active' : '' %>" id="tab-<%= type %>">
+                                <div class="tab-pane fade" id="tab-<%= type %>">
                                     <div class="table-responsive">
                                         <table class="table table-hover align-middle border-top">
                                             <thead class="table-light">
@@ -125,14 +142,32 @@
         </div>
     </div>
 
+    <div class="modal fade" id="resetPwdModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Cấp mật khẩu mới</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="resetUserId">
+                    <label class="form-label">Mật khẩu mới cho người dùng:</label>
+                    <input type="password" id="newPassword" class="form-control" placeholder="Nhập mật khẩu mới...">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <button type="button" class="btn btn-primary" onclick="submitResetPwd()">Lưu thay đổi</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <script>
         // --- 📊 XỬ LÝ BIỂU ĐỒ ---
         const ctx = document.getElementById('orderChart').getContext('2d');
-        
-        // Đọc dữ liệu từ thẻ ẩn (Đã dùng JSON.parse để đảm bảo mảng sạch)
         const rawValue = document.getElementById('bookingDataRaw').value;
         const bookingData = JSON.parse(rawValue); 
 
@@ -150,15 +185,66 @@
             options: { 
                 responsive: true, 
                 maintainAspectRatio: false,
-                scales: { 
-                    y: { 
-                        beginAtZero: true, 
-                        ticks: { stepSize: 1 } 
-                    } 
-                },
+                scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } },
                 plugins: { legend: { display: false } }
             }
         });
+
+        // --- 👤 LOGIC QUẢN LÝ TÀI KHOẢN ---
+        async function loadUsers() {
+            const res = await fetch('/api/admin/users');
+            const users = await res.json();
+            const tbody = document.getElementById('list-users');
+            tbody.innerHTML = users.map(u => `
+                <tr>
+                    <td class="text-start fw-bold">${u.username}</td>
+                    <td><span class="badge bg-info">${u.role}</span></td>
+                    <td><span class="badge ${u.isActive?'bg-success':'bg-danger'}">${u.isActive?'Hoạt động':'Đã khóa'}</span></td>
+                    <td class="text-end">
+                        <button class="btn btn-sm btn-outline-warning" onclick="openResetModal('${u._id}')" title="Sửa mật khẩu">🔑</button>
+                        <button class="btn btn-sm ${u.isActive?'btn-outline-secondary':'btn-outline-success'}" onclick="toggleUserStatus('${u._id}')">
+                            ${u.isActive?'Khóa':'Mở'}
+                        </button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteUser('${u._id}')">🗑️</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function openResetModal(id) {
+            document.getElementById('resetUserId').value = id;
+            new bootstrap.Modal(document.getElementById('resetPwdModal')).show();
+        }
+
+        async function submitResetPwd() {
+            const id = document.getElementById('resetUserId').value;
+            const newPassword = document.getElementById('newPassword').value;
+            if(!newPassword) return alert("Vui lòng nhập mật khẩu mới");
+            
+            const res = await fetch(`/api/admin/users/${id}/reset-password`, {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ newPassword })
+            });
+            if(res.ok) {
+                alert("Đã đổi mật khẩu thành công!");
+                location.reload();
+            }
+        }
+
+        async function toggleUserStatus(id) {
+            if(confirm("Xác nhận đổi trạng thái tài khoản này?")) {
+                await fetch(`/api/admin/users/${id}/toggle-status`, { method: 'PUT' });
+                loadUsers();
+            }
+        }
+
+        async function deleteUser(id) {
+            if(confirm("Bạn có chắc muốn xóa vĩnh viễn tài khoản này?")) {
+                await fetch(`/api/admin/users/${id}`, { method: 'DELETE' });
+                loadUsers();
+            }
+        }
 
         // --- 🛠️ LOGIC QUẢN LÝ DỊCH VỤ (API) ---
         async function loadServices(type) {
@@ -166,12 +252,10 @@
                 const res = await fetch(`/api/${type}`);
                 const data = await res.json();
                 const tbody = document.getElementById(`list-${type}`);
-                
                 if (data.length === 0) {
                     tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted py-3">Chưa có dữ liệu</td></tr>';
                     return;
                 }
-
                 tbody.innerHTML = data.map(item => `
                     <tr>
                         <td><img src="${item.image}" width="60" height="45" class="rounded shadow-sm" style="object-fit:cover"></td>
@@ -181,9 +265,7 @@
                         </td>
                     </tr>
                 `).join('');
-            } catch (err) {
-                console.error("Lỗi khi load " + type, err);
-            }
+            } catch (err) { console.error("Lỗi khi load " + type, err); }
         }
 
         async function deleteService(type, id) {
@@ -198,22 +280,16 @@
             const type = document.getElementById('serviceType').value;
             const name = document.getElementById('serviceName').value;
             const image = document.getElementById('serviceImage').value;
-
             const res = await fetch(`/api/${type}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ name, image })
             });
-
-            if (res.ok) {
-                e.target.reset();
-                loadServices(type);
-                alert('Thêm thành công!');
-            }
+            if (res.ok) { e.target.reset(); loadServices(type); alert('Thêm thành công!'); }
         });
 
-        // Khởi động load 5 tab khi trang tải xong
         window.onload = () => {
+            loadUsers();
             ['foods', 'gyms', 'spas', 'swims', 'transports'].forEach(loadServices);
         };
     </script>

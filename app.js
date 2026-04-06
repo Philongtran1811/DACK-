@@ -2,6 +2,7 @@ const express = require('express');
 const app = express();
 const path = require('path');
 const cookieParser = require('cookie-parser');
+const bcrypt = require('bcrypt'); // Thêm để hỗ trợ reset mật khẩu
 
 // 🧠 1. Kết nối Database
 require('./config/db');
@@ -85,7 +86,7 @@ app.get('/manage/bookings', isStaff, async (req, res) => {
     }
 });
 
-// 👑 Trang Admin
+// 👑 Trang Admin (Dashboard & Thống kê)
 app.get('/admin/dashboard', isAdmin, async (req, res) => {
     try {
         // 1. Thống kê cơ bản
@@ -95,8 +96,7 @@ app.get('/admin/dashboard', isAdmin, async (req, res) => {
             totalStaff: await User.countDocuments({ role: 'RECEPTIONIST' })
         };
 
-        // 2. Thống kê số lượng đơn hàng theo tháng (Ví dụ cho 6 tháng đầu năm 2026)
-        // Logic: Tìm các đơn hàng trong tháng X năm 2026
+        // 2. Thống kê số lượng đơn hàng theo tháng (năm 2026)
         const monthlyCounts = [];
         for (let m = 0; m < 6; m++) {
             const start = new Date(2026, m, 1);
@@ -109,7 +109,7 @@ app.get('/admin/dashboard', isAdmin, async (req, res) => {
 
         res.render('admin/dashboard', { 
             stats, 
-            bookingMonthlyData: monthlyCounts, // Mảng số lượng đơn: [5, 12, 8, ...]
+            bookingMonthlyData: monthlyCounts,
             user: req.user 
         });
     } catch (err) {
@@ -117,7 +117,7 @@ app.get('/admin/dashboard', isAdmin, async (req, res) => {
     }
 });
 
-// Thêm vào phần View Routes trong app.js
+// ✨ View Routes cho Dịch vụ
 app.get('/view/foods', async (req, res) => {
     const data = await Food.find();
     res.render('services/all-services', { title: "Thực Đơn Đồ Ăn", data, user: req.user });
@@ -142,6 +142,7 @@ app.get('/view/transports', async (req, res) => {
     const data = await Transport.find();
     res.render('services/all-services', { title: "Vận Chuyển", data, user: req.user });
 });
+
 // 🔐 Auth
 app.get('/login', (req, res) => res.render('login', { user: req.user || null }));
 app.get('/register', (req, res) => res.render('register', { user: req.user || null }));
@@ -149,20 +150,59 @@ app.get('/register', (req, res) => res.render('register', { user: req.user || nu
 // ==========================================
 // ⚙️ 7. API ROUTES (Xử lý dữ liệu)
 // ==========================================
+
+// 👥 API QUẢN LÝ TÀI KHOẢN (ADMIN ONLY) - PHẦN THÊM MỚI
+// Lấy danh sách user
+app.get('/api/admin/users', isAdmin, async (req, res) => {
+    try {
+        const users = await User.find().select("-password");
+        res.json(users);
+    } catch (err) { res.status(500).json({ message: "Lỗi" }); }
+});
+
+// Reset mật khẩu
+app.put('/api/admin/users/:id/reset-password', isAdmin, async (req, res) => {
+    try {
+        const { newPassword } = req.body;
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        await User.findByIdAndUpdate(req.params.id, { password: hashedPassword });
+        res.json({ message: "Thành công" });
+    } catch (err) { res.status(500).json({ message: "Lỗi" }); }
+});
+
+// Khóa/Mở khóa tài khoản
+app.put('/api/admin/users/:id/toggle-status', isAdmin, async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id);
+        user.isActive = !user.isActive; 
+        await user.save();
+        res.json({ message: "Thành công" });
+    } catch (err) { res.status(500).json({ message: "Lỗi" }); }
+});
+
+// Xóa tài khoản
+app.delete('/api/admin/users/:id', isAdmin, async (req, res) => {
+    try {
+        await User.findByIdAndDelete(req.params.id);
+        res.json({ message: "Thành công" });
+    } catch (err) { res.status(500).json({ message: "Lỗi" }); }
+});
+
+// --- Các API Routes cũ giữ nguyên ---
 app.use('/api/auth', require('./routes/auth.routes'));
 app.use('/api/bookings', require('./routes/booking.routes'));
 app.use('/api/room-types', require('./routes/roomTypes')); 
 app.use('/api/reviews', require('./routes/review.routes'));
 app.use('/api/rooms', require('./routes/rooms'));
 
-// ✅ API Dịch vụ mới (Hướng vào folder routes)
+// API Dịch vụ
 app.use('/api/foods', require('./routes/foods'));
 app.use('/api/gyms', require('./routes/gyms'));
 app.use('/api/spas', require('./routes/spas'));
 app.use('/api/swims', require('./routes/swims'));
 app.use('/api/transports', require('./routes/transports'));
 
-// 🛑 8. 404 (Luôn để cuối cùng)
+// 🛑 8. 404
 app.use((req, res) => {
     res.status(404).render('404', { user: req.user || null }); 
 });
@@ -173,7 +213,6 @@ app.use((req, res) => {
 const PORT = 3000;
 app.listen(PORT, () => {
     console.log(`\n✅ HOTEL SYSTEM READY!`);
-    console.log(`🚀 Thư mục models/services đã sẵn sàng.`);
     console.log(`🚀 Link dự án: http://localhost:${PORT}`);
     console.log(`📅 Nhóm: Long, Trường, Thành, Đạt, Vỹ, Việt, Nhiên\n`);
 });

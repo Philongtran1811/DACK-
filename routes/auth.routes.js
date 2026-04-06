@@ -8,16 +8,25 @@ router.post("/login", async (req, res) => {
         const { username, password } = req.body;
         const result = await userController.login(username, password);
 
+        // 1. Kiểm tra nếu sai tài khoản/mật khẩu
         if (!result || !result.token) {
             return res.status(401).json({ message: "Sai tài khoản hoặc mật khẩu" });
         }
 
-        // 🍪 LƯU COOKIE (Đã fix path để không bị Cannot GET)
+        // 2. 🔥 KIỂM TRA TRẠNG THÁI TÀI KHOẢN (QUAN TRỌNG)
+        // Nếu isActive là false, chặn ngay lập tức
+        if (result.user && result.user.isActive === false) {
+            return res.status(403).json({ 
+                message: "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ Admin!" 
+            });
+        }
+
+        // 3. Nếu mọi thứ ổn, mới tiến hành LƯU COOKIE
         res.cookie("TOKEN_HOTEL", result.token, {
             httpOnly: true,
             maxAge: 24 * 60 * 60 * 1000,
             sameSite: 'lax',
-            path: '/' // ✅ QUAN TRỌNG: Giúp trang /admin thấy được cookie này
+            path: '/' 
         });
 
         res.json({ 
@@ -27,6 +36,7 @@ router.post("/login", async (req, res) => {
         });
 
     } catch (err) {
+        console.error("Lỗi Login:", err);
         res.status(500).json({ message: "Lỗi hệ thống" });
     }
 });
