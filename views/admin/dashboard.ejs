@@ -38,7 +38,6 @@
             </div>
 
             <div class="col-md-9">
-                
                 <div class="row g-3 mb-4">
                     <div class="col-md-4">
                         <div class="card bg-primary text-white p-3 stat-card shadow-sm mb-3 text-center">
@@ -77,7 +76,8 @@
                                     <option value="spas">🧖‍♀️ Spa</option>
                                     <option value="swims">🏊‍♂️ Hồ bơi</option>
                                     <option value="transports">🚗 Vận chuyển</option>
-                                    <option value="billiards">🎱 Bida</option> </select>
+                                    <option value="billiards">🎱 Bida</option> 
+                                </select>
                             </div>
                             <div class="col-md-3">
                                 <input type="text" class="form-control" id="serviceName" placeholder="Tên dịch vụ..." required>
@@ -101,14 +101,16 @@
                             <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-spas">Spa</button></li>
                             <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-swims">Swim</button></li>
                             <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-transports">Transport</button></li>
-                            <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-billiards">Billiard</button></li> </ul>
+                            <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-billiards">Billiard</button></li> 
+                            <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-reviews">⭐ Đánh giá</button></li>
+                        </ul>
                         <div class="tab-content p-3 text-center">
                             <div class="tab-pane fade show active" id="tab-users">
                                 <div class="table-responsive">
                                     <table class="table table-hover align-middle border-top">
                                         <thead class="table-light">
                                             <tr>
-                                                <th>Username</th>
+                                                <th class="text-start ps-3">Tên đăng nhập</th>
                                                 <th>Quyền</th>
                                                 <th>Trạng thái</th>
                                                 <th class="text-end">Hành động</th>
@@ -119,13 +121,14 @@
                                 </div>
                             </div>
 
-                            <% ['foods', 'gyms', 'spas', 'swims', 'transports', 'billiards'].forEach((type) => { %> <div class="tab-pane fade" id="tab-<%= type %>">
+                            <% ['foods', 'gyms', 'spas', 'swims', 'transports', 'billiards'].forEach((type) => { %> 
+                                <div class="tab-pane fade" id="tab-<%= type %>">
                                     <div class="table-responsive">
                                         <table class="table table-hover align-middle border-top">
                                             <thead class="table-light">
                                                 <tr>
                                                     <th style="width: 80px;">Ảnh</th>
-                                                    <th>Tên dịch vụ</th>
+                                                    <th class="text-start">Tên dịch vụ</th>
                                                     <th class="text-end">Hành động</th>
                                                 </tr>
                                             </thead>
@@ -134,6 +137,22 @@
                                     </div>
                                 </div>
                             <% }) %>
+
+                            <div class="tab-pane fade" id="tab-reviews">
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle border-top">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th class="text-start">Tên khách hàng</th>
+                                                <th class="text-start">Nội dung đánh giá</th>
+                                                <th>Số sao</th>
+                                                <th class="text-end">Hành động</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="list-reviews"></tbody>
+                                    </table>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -150,7 +169,7 @@
                 </div>
                 <div class="modal-body">
                     <input type="hidden" id="resetUserId">
-                    <label class="form-label">Mật khẩu mới cho người dùng:</label>
+                    <label class="form-label">Mật khẩu mới:</label>
                     <input type="password" id="newPassword" class="form-control" placeholder="Nhập mật khẩu mới...">
                 </div>
                 <div class="modal-footer">
@@ -165,49 +184,44 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <script>
-        // --- 📊 XỬ LÝ BIỂU ĐỒ ---
+        // --- 📊 BIỂU ĐỒ ---
         const ctx = document.getElementById('orderChart').getContext('2d');
-        const rawValue = document.getElementById('bookingDataRaw').value;
-        const bookingData = JSON.parse(rawValue); 
+        const bookingDataRaw = document.getElementById('bookingDataRaw').value;
+        const bookingData = bookingDataRaw ? JSON.parse(bookingDataRaw) : [0,0,0,0,0,0]; 
 
         new Chart(ctx, {
             type: 'bar',
             data: {
                 labels: ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6'],
                 datasets: [{
-                    label: 'Số đơn hàng tiếp nhận',
+                    label: 'Số đơn hàng',
                     data: bookingData,
                     backgroundColor: '#0d6efd',
                     borderRadius: 8,
                 }]
             },
-            options: { 
-                responsive: true, 
-                maintainAspectRatio: false,
-                scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } },
-                plugins: { legend: { display: false } }
-            }
+            options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }, plugins: { legend: { display: false } } }
         });
 
-        // --- 👤 LOGIC QUẢN LÝ TÀI KHOẢN ---
+        // --- 👤 TÀI KHOẢN ---
         async function loadUsers() {
-            const res = await fetch('/api/admin/users');
-            const users = await res.json();
-            const tbody = document.getElementById('list-users');
-            tbody.innerHTML = users.map(u => `
-                <tr>
-                    <td class="text-start fw-bold">${u.username}</td>
-                    <td><span class="badge bg-info">${u.role}</span></td>
-                    <td><span class="badge ${u.isActive?'bg-success':'bg-danger'}">${u.isActive?'Hoạt động':'Đã khóa'}</span></td>
-                    <td class="text-end">
-                        <button class="btn btn-sm btn-outline-warning" onclick="openResetModal('${u._id}')" title="Sửa mật khẩu">🔑</button>
-                        <button class="btn btn-sm ${u.isActive?'btn-outline-secondary':'btn-outline-success'}" onclick="toggleUserStatus('${u._id}')">
-                            ${u.isActive?'Khóa':'Mở'}
-                        </button>
-                        <button class="btn btn-sm btn-danger" onclick="deleteUser('${u._id}')">🗑️</button>
-                    </td>
-                </tr>
-            `).join('');
+            try {
+                const res = await fetch('/api/admin/users');
+                const users = await res.json();
+                const tbody = document.getElementById('list-users');
+                tbody.innerHTML = users.map(u => `
+                    <tr>
+                        <td class="text-start fw-bold ps-3">${u.username}</td>
+                        <td><span class="badge bg-info">${u.role}</span></td>
+                        <td><span class="badge ${u.isActive?'bg-success':'bg-danger'}">${u.isActive?'Hoạt động':'Đã khóa'}</span></td>
+                        <td class="text-end">
+                            <button class="btn btn-sm btn-outline-warning" onclick="openResetModal('${u._id}')">🔑</button>
+                            <button class="btn btn-sm ${u.isActive?'btn-outline-secondary':'btn-outline-success'}" onclick="toggleUserStatus('${u._id}')">${u.isActive?'Khóa':'Mở'}</button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteUser('${u._id}')">🗑️</button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch(e) {}
         }
 
         function openResetModal(id) {
@@ -218,57 +232,48 @@
         async function submitResetPwd() {
             const id = document.getElementById('resetUserId').value;
             const newPassword = document.getElementById('newPassword').value;
-            if(!newPassword) return alert("Vui lòng nhập mật khẩu mới");
-            
+            if(!newPassword) return alert("Vui lòng nhập mật khẩu");
             const res = await fetch(`/api/admin/users/${id}/reset-password`, {
                 method: 'PUT',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({ newPassword })
             });
-            if(res.ok) {
-                alert("Đã đổi mật khẩu thành công!");
-                location.reload();
-            }
+            if(res.ok) { alert("Thành công!"); location.reload(); }
         }
 
         async function toggleUserStatus(id) {
-            if(confirm("Xác nhận đổi trạng thái tài khoản này?")) {
+            if(confirm("Đổi trạng thái tài khoản?")) {
                 await fetch(`/api/admin/users/${id}/toggle-status`, { method: 'PUT' });
                 loadUsers();
             }
         }
 
         async function deleteUser(id) {
-            if(confirm("Bạn có chắc muốn xóa vĩnh viễn tài khoản này?")) {
+            if(confirm("Xóa vĩnh viễn tài khoản?")) {
                 await fetch(`/api/admin/users/${id}`, { method: 'DELETE' });
                 loadUsers();
             }
         }
 
-        // --- 🛠️ LOGIC QUẢN LÝ DỊCH VỤ (API) ---
+        // --- 🛠️ DỊCH VỤ ---
         async function loadServices(type) {
             try {
                 const res = await fetch(`/api/${type}`);
                 const data = await res.json();
                 const tbody = document.getElementById(`list-${type}`);
-                if (data.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted py-3">Chưa có dữ liệu</td></tr>';
-                    return;
-                }
+                if (!data.length) { tbody.innerHTML = '<tr><td colspan="3" class="text-muted py-3">Chưa có dữ liệu</td></tr>'; return; }
                 tbody.innerHTML = data.map(item => `
                     <tr>
                         <td><img src="${item.image}" width="60" height="45" class="rounded shadow-sm" style="object-fit:cover"></td>
                         <td class="fw-bold text-start ps-3">${item.name}</td>
-                        <td class="text-end">
-                            <button class="btn btn-outline-danger btn-sm rounded-pill px-3" onclick="deleteService('${type}', '${item._id}')">🗑️ Xóa</button>
-                        </td>
+                        <td class="text-end"><button class="btn btn-outline-danger btn-sm px-3" onclick="deleteService('${type}', '${item._id}')">🗑️ Xóa</button></td>
                     </tr>
                 `).join('');
-            } catch (err) { console.error("Lỗi khi load " + type, err); }
+            } catch (err) { console.error(err); }
         }
 
         async function deleteService(type, id) {
-            if (confirm('Nhóm chắc chắn muốn xóa dịch vụ này chứ?')) {
+            if (confirm('Xóa dịch vụ này?')) {
                 const res = await fetch(`/api/${type}/${id}`, { method: 'DELETE' });
                 if (res.ok) loadServices(type);
             }
@@ -284,12 +289,43 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ name, image })
             });
-            if (res.ok) { e.target.reset(); loadServices(type); alert('Thêm thành công!'); }
+            if (res.ok) { e.target.reset(); loadServices(type); }
         });
+
+        // --- ⭐ ĐÁNH GIÁ (ĐỔI TÊN THÀNH KHÁCH HÀNG THÂN THIẾT) ---
+        async function loadReviews() {
+            try {
+                const res = await fetch('/api/reviews');
+                const reviews = await res.json();
+                const tbody = document.getElementById('list-reviews');
+                if (!reviews.length) {
+                    tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-3">Chưa có đánh giá nào</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = reviews.map(r => `
+                    <tr>
+                        <td class="text-start fw-bold">${r.userId?.username || 'Khách hàng thân thiết'}</td>
+                        <td class="text-start">${r.comment}</td>
+                        <td><span class="text-warning">${'⭐'.repeat(r.rating)}</span></td>
+                        <td class="text-end">
+                            <button class="btn btn-sm btn-outline-danger px-3 rounded-pill" onclick="deleteReview('${r._id}')">🗑️ Xóa</button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (err) { console.error("Lỗi load review:", err); }
+        }
+
+        async function deleteReview(id) {
+            if (confirm("Xóa đánh giá này?")) {
+                const res = await fetch(`/api/reviews/${id}`, { method: 'DELETE' });
+                if (res.ok) loadReviews();
+            }
+        }
 
         window.onload = () => {
             loadUsers();
-            ['foods', 'gyms', 'spas', 'swims', 'transports', 'billiards'].forEach(loadServices); // ✅ ĐÃ THÊM BIDA VÀO ĐÂY
+            loadReviews();
+            ['foods', 'gyms', 'spas', 'swims', 'transports', 'billiards'].forEach(loadServices);
         };
     </script>
 </body>

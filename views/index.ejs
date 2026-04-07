@@ -6,6 +6,7 @@
     <title>Trang Chủ - Hotel Manager Pro</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
         body { 
@@ -112,7 +113,7 @@
                             <% if (user.role === 'ADMIN') { %>
                                 <li><a class="dropdown-item text-success fw-bold" href="/admin/dashboard">📊 Quản trị hệ thống</a></li>
                             <% } %>
-                            <li><a class="dropdown-item" href="/profile">👤 Trang cá nhân</a></li>
+                            <li><a class="dropdown-item" href="javascript:void(0)" onclick="openProfileModal()">👤 Trang cá nhân</a></li>
                             <li><a class="dropdown-item" href="/api/bookings/my-history">📜 Lịch sử đặt phòng</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item text-danger" href="/api/auth/logout">🚪 Đăng xuất</a></li>
@@ -130,7 +131,6 @@
 <div class="container">
     <div class="main-card">
         <h1 class="display-4 fw-bold text-primary mb-3">Hệ Thống Quản Lý Khách Sạn</h1>
-        <p class="group-name">Thực hiện bởi: <b>Long, Trường, Thành, Đạt, Vỹ, Việt, Nhiên</b></p>
         
         <hr class="my-4 mx-auto" style="width: 30%; border-top: 2px solid #e2e8f0;">
 
@@ -144,7 +144,7 @@
                 <a href="/rooms" class="btn btn-success action-btn shadow-sm">🏨 Danh sách phòng</a>
                 <a href="/api/bookings/my-history" class="btn btn-info action-btn shadow-sm text-white">📜 Lịch sử đặt phòng</a>
                 <a href="/room-types" class="btn btn-warning action-btn shadow-sm text-dark">🧾 Loại phòng</a>
-                <a href="/profile" class="btn btn-outline-primary action-btn">👤 Trang cá nhân</a>
+                <a href="javascript:void(0)" onclick="openProfileModal()" class="btn btn-outline-primary action-btn">👤 Trang cá nhân</a>
             </div>
 
             <h5 class="mt-5 mb-3 fw-bold text-secondary text-uppercase">Dịch vụ tiện ích</h5>
@@ -174,12 +174,140 @@
     </div>
 </div>
 
+<div class="modal fade" id="profileModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow-lg border-0" style="border-radius: 20px;">
+            <form id="profileForm">
+                <div class="modal-header bg-dark text-white border-0" style="border-radius: 20px 20px 0 0;">
+                    <h5 class="modal-title fw-bold"><i class="fa-solid fa-user-circle me-2"></i>Thông tin cá nhân</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4 text-start">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-muted text-uppercase">Họ và tên</label>
+                        <input type="text" id="pFullName" class="form-control border-0 bg-light p-3" style="border-radius: 12px;" placeholder="Nhập tên thật của bạn..." required>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold small text-muted text-uppercase">Số điện thoại</label>
+                            <input type="tel" id="pPhone" class="form-control border-0 bg-light p-3" style="border-radius: 12px;" placeholder="09xxxx...">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold small text-muted text-uppercase">Giới tính</label>
+                            <select id="pGender" class="form-select border-0 bg-light p-3" style="border-radius: 12px;">
+                                <option value="Nam">Nam</option>
+                                <option value="Nữ">Nữ</option>
+                                <option value="Khác">Khác</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-muted text-uppercase">Địa chỉ cư trú</label>
+                        <input type="text" id="pAddress" class="form-control border-0 bg-light p-3" style="border-radius: 12px;" placeholder="Ví dụ: TP. Hồ Chí Minh">
+                    </div>
+                    <div class="mb-0">
+                        <label class="form-label fw-bold small text-muted text-uppercase">Giới thiệu ngắn</label>
+                        <textarea id="pBio" class="form-control border-0 bg-light p-3" style="border-radius: 12px;" rows="2" placeholder="Sở thích hoặc thông tin thêm..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 p-4 pt-0">
+                    <button type="button" class="btn btn-link text-danger text-decoration-none me-auto" onclick="deleteProfile()">Xóa hồ sơ</button>
+                    <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Đóng</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold">Lưu thay đổi</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <footer class="text-center">
     <p class="mb-0">&copy; 2026 - <b>Hotel Manager Pro System</b></p>
     <small class="text-muted">Đồ án thực tập nhóm - Đại học Công nghệ</small>
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    // 1. Khởi tạo Bootstrap Modal
+    let profileModal;
+    document.addEventListener('DOMContentLoaded', function() {
+        profileModal = new bootstrap.Modal(document.getElementById('profileModal'));
+    });
+
+    // 2. Hàm mở và load dữ liệu Profile
+    async function openProfileModal() {
+        try {
+            const res = await fetch('/api/profiles/me');
+            const data = await res.json();
+            
+            // data._id tồn tại nghĩa là User đã có bản ghi Profile trong DB
+            if (data && data._id) {
+                document.getElementById('pFullName').value = data.fullName || '';
+                document.getElementById('pPhone').value = data.phone || '';
+                document.getElementById('pAddress').value = data.address || '';
+                document.getElementById('pGender').value = data.gender || 'Khác';
+                document.getElementById('pBio').value = data.bio || '';
+            } else {
+                // Nếu chưa có profile, dùng tên từ bảng User làm mặc định
+                document.getElementById('pFullName').value = "<%= user ? (user.name || user.username) : '' %>";
+                document.getElementById('pPhone').value = "";
+                document.getElementById('pAddress').value = "";
+                document.getElementById('pGender').value = "Khác";
+                document.getElementById('pBio').value = "";
+            }
+            profileModal.show();
+        } catch (error) {
+            console.error("Lỗi load profile:", error);
+            alert("Không thể tải thông tin hồ sơ!");
+        }
+    }
+
+    // 3. Xử lý lưu thông tin Profile
+    document.getElementById('profileForm').onsubmit = async (e) => {
+        e.preventDefault();
+        const formData = {
+            fullName: document.getElementById('pFullName').value,
+            phone: document.getElementById('pPhone').value,
+            address: document.getElementById('pAddress').value,
+            gender: document.getElementById('pGender').value,
+            bio: document.getElementById('pBio').value
+        };
+
+        try {
+            const res = await fetch('/api/profiles/update', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            });
+
+            if (res.ok) {
+                alert("Đã cập nhật thông tin hồ sơ!");
+                profileModal.hide();
+                // Bro có thể thêm location.reload() nếu muốn đổi tên hiển thị ngay lập tức
+            } else {
+                alert("Lỗi khi lưu thông tin!");
+            }
+        } catch (error) {
+            console.error("Lỗi gửi profile:", error);
+            alert("Lỗi kết nối máy chủ!");
+        }
+    };
+
+    // 4. Xóa hồ sơ
+    async function deleteProfile() {
+        if (confirm("Xác nhận xóa hồ sơ cá nhân của bạn? Thông tin tài khoản vẫn được giữ nguyên.")) {
+            try {
+                const res = await fetch('/api/profiles/delete', { method: 'DELETE' });
+                if (res.ok) {
+                    alert("Đã xóa hồ sơ!");
+                    location.reload();
+                }
+            } catch (error) {
+                alert("Lỗi hệ thống!");
+            }
+        }
+    }
+</script>
 
 </body>
 </html>
