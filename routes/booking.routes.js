@@ -72,17 +72,25 @@ router.get("/my-history", requireAuth, async (req, res) => {
         res.status(500).send("Lỗi khi tải lịch sử");
     }
 });
-
 // ================= 3. QUẢN LÝ TẤT CẢ BOOKING (Lễ tân & Admin) =================
-// Route này giúp Lễ tân thấy toàn bộ đơn hàng của mọi khách
-router.get("/manage", requireAuth, isStaff, async (req, res) => {
+router.get("/manage", requireAuth, async (req, res) => {
     try {
+        // Kiểm tra quyền thủ công ngay tại đây
+        if (req.user.role !== 'RECEPTIONIST' && req.user.role !== 'ADMIN') {
+            return res.status(403).send("Chỉ Lễ tân hoặc Admin mới có quyền vào đây!");
+        }
+
         const bookings = await Booking.find()
             .populate("user", "name phone email")
             .populate({ path: 'room', populate: { path: 'roomType' } })
             .sort({ createdAt: -1 });
 
+        // Nếu là Admin thì có thể render ra giao diện riêng hoặc dùng chung với Lễ tân
+        const viewPath = req.user.role === 'ADMIN' ? "admin/manage_bookings" : "receptionist/manage";
+        
+        // Nếu bro muốn dùng chung 1 file manage của lễ tân thì cứ để nguyên:
         res.render("receptionist/manage", { bookings, user: req.user });
+
     } catch (err) {
         res.status(500).send("Lỗi tải trang quản lý");
     }

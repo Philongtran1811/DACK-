@@ -4,95 +4,44 @@
     <meta charset="UTF-8">
     <title>Quản lý & Đặt phòng - Hotel Pro</title>
     <style>
+        /* ... Giữ nguyên CSS cũ của các bro ... */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background: #f4f7fb; padding: 20px; }
-        
-        /* Navigation Bar */
-        .nav-header { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            margin-bottom: 25px; 
-            background: white; 
-            padding: 15px 25px; 
-            border-radius: 12px; 
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05); 
-        }
-        .nav-links a { 
-            text-decoration: none; 
-            color: #4f46e5; 
-            font-weight: 600; 
-            margin-right: 20px; 
-            transition: 0.3s; 
-        }
+        .nav-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; background: white; padding: 15px 25px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .nav-links a { text-decoration: none; color: #4f46e5; font-weight: 600; margin-right: 20px; transition: 0.3s; }
         .nav-links a:hover { color: #1e1b4b; }
-
         h2 { margin-bottom: 20px; color: #1e293b; display: flex; align-items: center; gap: 10px; }
-
-        .form-box {
-            background: white; padding: 20px; border-radius: 12px;
-            width: 100%; max-width: 400px; margin-bottom: 30px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-
-        input, select {
-            width: 100%; padding: 10px; margin-bottom: 10px;
-            border-radius: 8px; border: 1px solid #ddd; outline: none;
-        }
-
-        button {
-            padding: 10px; border: none; border-radius: 8px;
-            cursor: pointer; font-weight: bold; transition: 0.3s;
-        }
-
+        .form-box { background: white; padding: 20px; border-radius: 12px; width: 100%; max-width: 400px; margin-bottom: 30px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        input, select { width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #ddd; outline: none; }
+        button { padding: 10px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; }
         .btn-add { background: #16a34a; color: white; width: 100%; }
         .btn-add:hover { background: #15803d; }
-        
-        .room-list {
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 25px;
-        }
-
-        .room-card {
-            background: white; border-radius: 15px; overflow: hidden;
-            box-shadow: 0 10px 15px rgba(0,0,0,0.1); display: flex; flex-direction: column;
-            transition: 0.3s;
-        }
+        .room-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 25px; }
+        .room-card { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 10px 15px rgba(0,0,0,0.1); display: flex; flex-direction: column; transition: 0.3s; }
         .room-card:hover { transform: translateY(-5px); }
-
         .room-card img { width: 100%; height: 200px; object-fit: cover; }
         .room-body { padding: 20px; flex-grow: 1; }
         .title { font-weight: bold; font-size: 20px; margin-bottom: 5px; color: #1e293b; }
         .price { color: #e11d48; font-weight: bold; font-size: 18px; margin-bottom: 10px; }
-
-        .status {
-            padding: 5px 15px; border-radius: 20px; font-size: 12px; font-weight: bold; display: inline-block; margin-bottom: 15px;
-        }
+        .status { padding: 5px 15px; border-radius: 20px; font-size: 12px; font-weight: bold; display: inline-block; margin-bottom: 15px; }
         .AVAILABLE { background: #dcfce7; color: #166534; }
         .BOOKED { background: #fee2e2; color: #991b1b; }
         .MAINTENANCE { background: #fef3c7; color: #92400e; }
-
-        .rating-box { margin-top: 10px; color: #f59e0b; font-weight: bold; border-top: 1px solid #eee; pt: 10px; }
-        .reviews-list {
-            font-size: 13px; background: #f8fafc; padding: 12px; border-radius: 8px; 
-            margin: 10px 0; max-height: 120px; overflow-y: auto; border: 1px solid #eee;
-        }
-        .review-form-box {
-            background: #fffbeb; border: 1px dashed #f59e0b; padding: 12px; border-radius: 10px; margin-top: 10px;
-        }
-
+        .rating-box { margin-top: 10px; color: #f59e0b; font-weight: bold; border-top: 1px solid #eee; padding-top: 10px; }
+        .reviews-list { font-size: 13px; background: #f8fafc; padding: 12px; border-radius: 8px; margin: 10px 0; max-height: 120px; overflow-y: auto; border: 1px solid #eee; }
+        .review-form-box { background: #fffbeb; border: 1px dashed #f59e0b; padding: 12px; border-radius: 10px; margin-top: 10px; }
         .actions { margin-top: 20px; display: flex; gap: 10px; }
         .btn { flex: 1; text-align: center; padding: 10px; border-radius: 8px; text-decoration: none; color: white; font-size: 14px; font-weight: bold; transition: 0.3s; }
         .book { background: #4f46e5; }
         .book:hover { background: #3730a3; }
         .edit { background: #f59e0b; }
         .delete { background: #ef4444; }
-
         #editBox { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 380px; background: white; padding: 30px; border-radius: 15px; display: none; z-index: 100; box-shadow: 0 25px 50px rgba(0,0,0,0.3); }
         .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; z-index: 90; backdrop-filter: blur(3px); }
     </style>
 </head>
 
 <body>
-
     <div class="nav-header">
         <div class="nav-links">
             <a href="/">🏠 Trang Chủ</a>
@@ -175,26 +124,23 @@
     <div id="editBox">
         <h3 style="margin-bottom: 20px; color: #1e293b;">🛠️ Cập nhật thông tin</h3>
         <form id="editForm">
+            <input type="hidden" id="editRoomId">
             <label style="font-size: 13px; font-weight: bold; color: #475569;">Mã phòng:</label>
             <input name="roomCode" id="editCode" required>
-            
             <label style="font-size: 13px; font-weight: bold; color: #475569;">Loại phòng:</label>
             <select name="roomType" id="editType" required>
                 <% roomTypes.forEach(rt => { %>
                     <option value="<%= rt._id %>"><%= rt.name %></option>
                 <% }) %>
             </select>
-            
             <label style="font-size: 13px; font-weight: bold; color: #475569;">Link ảnh:</label>
             <input name="image" id="editImage">
-            
             <label style="font-size: 13px; font-weight: bold; color: #475569;">Trạng thái:</label>
             <select name="status" id="editStatus">
                 <option value="AVAILABLE">AVAILABLE</option>
                 <option value="BOOKED">BOOKED</option>
                 <option value="MAINTENANCE">MAINTENANCE</option>
             </select>
-            
             <button type="submit" class="btn-add" style="background: #f59e0b; margin-top: 15px; height: 45px;">LƯU THAY ĐỔI</button>
             <button type="button" onclick="closeEdit()" style="background: #e2e8f0; color: #475569; width: 100%; margin-top: 10px; padding: 10px; border-radius: 8px;">Hủy bỏ</button>
         </form>
@@ -228,44 +174,69 @@
             }
         });
 
-        // --- 2. REVIEWS ---
+        // --- 2. REVIEWS (HIỂN THỊ TÊN TÀI KHOẢN) ---
         async function loadReviews(roomId) {
             try {
                 const res = await fetch("/api/reviews/room/" + roomId);
                 const data = await res.json();
                 const reviewContainer = document.getElementById("reviews-" + roomId);
+                
                 if (data.length > 0) {
                     let total = 0;
                     reviewContainer.innerHTML = data.map(r => {
                         total += r.rating;
-                        return `<div style="margin-bottom: 8px; border-bottom: 1px solid #f1f5f9; padding-bottom: 5px;">
-                                    <b style="color: #1e293b;">${r.user?.name || 'Khách'}:</b> ${r.comment} <span style="color: #f59e0b;">(${r.rating}⭐)</span>
+                        // ✅ Ưu tiên lấy username từ tài khoản đã review
+                        const reviewerName = r.user ? (r.user.username || r.user.name) : 'Khách';
+                        return `<div style="margin-bottom: 8px; border-bottom: 1px solid #f1f5f9; padding-bottom: 5px; text-align: left;">
+                                    <b style="color: #1e293b;">${reviewerName}:</b> ${r.comment} 
+                                    <span style="color: #f59e0b; font-size: 11px;">(${r.rating}⭐)</span>
                                 </div>`;
                     }).join('');
                     document.getElementById("avg-" + roomId).innerText = (total / data.length).toFixed(1);
                 } else {
                     reviewContainer.innerHTML = '<p class="text-muted small">Chưa có đánh giá nào.</p>';
                 }
-            } catch (err) { console.log(err); }
+            } catch (err) { console.log("Lỗi load review:", err); }
         }
 
+        // --- GỬI REVIEW (KHỚP VỚI BACKEND /api/reviews/create) ---
         async function submitReview(roomId) {
-            const rating = document.getElementById("rating-input-" + roomId).value;
-            const comment = document.getElementById("comment-input-" + roomId).value;
+            const ratingInput = document.getElementById("rating-input-" + roomId);
+            const commentInput = document.getElementById("comment-input-" + roomId);
+            const rating = ratingInput.value;
+            const comment = commentInput.value;
+
             if (!comment) return alert("Vui lòng nhập bình luận!");
-            const res = await fetch("/api/reviews", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ roomId, rating, comment })
-            });
-            if (res.ok) { alert("✅ Gửi review thành công!"); location.reload(); }
-            else { alert("❌ Bạn cần đăng nhập để gửi review!"); }
+
+            try {
+                const res = await fetch("/api/reviews/create", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    // Backend của bro cần: { user, room, rating, comment }
+                    // Chỗ này ID user thường được Backend lấy từ Token, nhưng nếu bro để thủ công thì cần ID
+                    body: JSON.stringify({ 
+                        room: roomId, // ID phòng
+                        rating: Number(rating), 
+                        comment: comment 
+                    })
+                });
+
+                const result = await res.json();
+
+                if (res.ok) { 
+                    alert("✅ Gửi review thành công!"); 
+                    location.reload(); 
+                } else { 
+                    alert("❌ Lỗi: " + (result.message || "Bạn cần đăng nhập!")); 
+                }
+            } catch (err) {
+                alert("❌ Lỗi hệ thống, vui lòng thử lại sau!");
+            }
         }
 
-        // --- 3. SỬA / XÓA ---
-        let currentEditId = null;
+        // --- 3. SỬA / XÓA PHÒNG ---
         function showEdit(id, code, type, image, status) {
-            currentEditId = id;
+            document.getElementById("editRoomId").value = id;
             document.getElementById("overlay").style.display = "block";
             document.getElementById("editBox").style.display = "block";
             document.getElementById("editCode").value = code;
@@ -279,7 +250,8 @@
         }
         document.getElementById("editForm").addEventListener("submit", async (e) => {
             e.preventDefault();
-            const res = await fetch("/api/rooms/" + currentEditId, {
+            const id = document.getElementById("editRoomId").value;
+            const res = await fetch("/api/rooms/" + id, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({

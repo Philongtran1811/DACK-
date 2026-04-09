@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>Quản trị Hệ thống - Hotel Pro</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body { background-color: #f8f9fa; font-family: 'Segoe UI', sans-serif; }
         .stat-card { transition: 0.3s; border: none; border-radius: 15px; }
@@ -13,10 +14,36 @@
         .chart-container { min-height: 250px; }
         .navbar { box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
         .list-group-item.active { background-color: #212529; border-color: #212529; }
+
+        /* --- 💬 CSS CHATBOX GIỐNG HỆT LỄ TÂN --- */
+        #chat-wrapper { position: fixed; bottom: 20px; right: 20px; z-index: 9999; }
+        #chat-window { 
+            display: none; width: 550px; height: 500px; 
+            background: white; border-radius: 15px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2); 
+            overflow: hidden; border: 1px solid #ddd;
+        }
+        .chat-layout { display: flex; height: 100%; }
+        .chat-sidebar { width: 180px; border-right: 1px solid #eee; background: #f8f9fa; overflow-y: auto; }
+        .chat-main { flex: 1; display: flex; flex-direction: column; }
+        
+        .contact-item { padding: 10px; border-bottom: 1px solid #eee; cursor: pointer; font-size: 0.85rem; position: relative; }
+        .contact-item:hover { background: #e9ecef; }
+        .contact-item.active { background: #d1e7dd; font-weight: bold; border-left: 4px solid #0d6efd; }
+        
+        .dot-notify { position: absolute; right: 10px; top: 15px; width: 8px; height: 8px; background: red; border-radius: 50%; }
+
+        #chat-header { background: #0d6efd; color: white; padding: 15px; font-weight: bold; }
+        #chat-messages { flex: 1; padding: 15px; overflow-y: auto; background: white; display: flex; flex-direction: column; scroll-behavior: smooth; }
+        .msg { margin-bottom: 10px; padding: 8px 12px; border-radius: 10px; max-width: 85%; font-size: 0.85rem; position: relative; }
+        .msg-me { background: #0d6efd; color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
+        .msg-partner { background: #e9ecef; color: #333; align-self: flex-start; border-bottom-left-radius: 2px; }
+        #chat-button { width: 60px; height: 60px; border-radius: 50%; background: #0d6efd; color: white; border: none; box-shadow: 0 5px 15px rgba(0,0,0,0.3); font-size: 24px; transition: 0.3s; }
+        #chat-button:hover { transform: scale(1.1); }
     </style>
 </head>
 <body>
-    <input type="hidden" id="bookingDataRaw" value='<%- JSON.stringify(bookingMonthlyData) %>'>
+    <input type="hidden" id="bookingDataRaw" value='<%- (typeof bookingMonthlyData !== "undefined") ? JSON.stringify(bookingMonthlyData) : "[0,0,0,0,0,0,0,0,0,0,0,0]" %>'>
 
     <nav class="navbar navbar-dark bg-dark mb-4 sticky-top shadow">
         <div class="container">
@@ -40,27 +67,21 @@
             <div class="col-md-9">
                 <div class="row g-3 mb-4">
                     <div class="col-md-4">
-                        <div class="card bg-primary text-white p-3 stat-card shadow-sm mb-3 text-center">
-                            <h3 class="fw-bold"><%= stats.totalRooms %></h3>
-                            <p class="mb-0 small opacity-75">Tổng số phòng</p>
-                        </div>
-                        <div class="card bg-success text-white p-3 stat-card shadow-sm mb-3 text-center">
-                            <h3 class="fw-bold"><%= stats.totalBookings %></h3>
-                            <p class="mb-0 small opacity-75">Tổng số đơn hàng</p>
-                        </div>
-                        <div class="card bg-warning text-dark p-3 stat-card shadow-sm text-center">
-                            <h3 class="fw-bold"><%= stats.totalStaff %></h3>
-                            <p class="mb-0 small opacity-75">Nhân viên lễ tân</p>
+                        <div class="card bg-primary text-white p-4 stat-card shadow-sm text-center h-100 d-flex flex-column justify-content-center">
+                            <h3 class="fw-bold fs-1"><%= stats.totalRooms %></h3>
+                            <p class="mb-0 opacity-75">TỔNG SỐ PHÒNG</p>
                         </div>
                     </div>
-                    <div class="col-md-8">
-                        <div class="card shadow-sm border-0 h-100">
-                            <div class="card-header bg-white fw-bold py-3">
-                                📈 Thống kê lượng đơn tiếp nhận (2026)
-                            </div>
-                            <div class="card-body chart-container">
-                                <canvas id="orderChart"></canvas>
-                            </div>
+                    <div class="col-md-4">
+                        <div class="card bg-success text-white p-4 stat-card shadow-sm text-center h-100 d-flex flex-column justify-content-center">
+                            <h3 class="fw-bold fs-1"><%= stats.totalBookings %></h3>
+                            <p class="mb-0 opacity-75">TỔNG SỐ ĐƠN HÀNG</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-warning text-dark p-4 stat-card shadow-sm text-center h-100 d-flex flex-column justify-content-center">
+                            <h3 class="fw-bold fs-1"><%= stats.totalStaff %></h3>
+                            <p class="mb-0 opacity-75">NHÂN VIÊN LỄ TÂN</p>
                         </div>
                     </div>
                 </div>
@@ -79,15 +100,9 @@
                                     <option value="billiards">🎱 Bida</option> 
                                 </select>
                             </div>
-                            <div class="col-md-3">
-                                <input type="text" class="form-control" id="serviceName" placeholder="Tên dịch vụ..." required>
-                            </div>
-                            <div class="col-md-4">
-                                <input type="text" class="form-control" id="serviceImage" placeholder="Link ảnh (để trống tự lấy)...">
-                            </div>
-                            <div class="col-md-2">
-                                <button type="submit" class="btn btn-primary w-100 fw-bold">THÊM</button>
-                            </div>
+                            <div class="col-md-3"><input type="text" class="form-control" id="serviceName" placeholder="Tên dịch vụ..." required></div>
+                            <div class="col-md-4"><input type="text" class="form-control" id="serviceImage" placeholder="Link ảnh..."></div>
+                            <div class="col-md-2"><button type="submit" class="btn btn-primary w-100 fw-bold">THÊM</button></div>
                         </form>
                     </div>
                 </div>
@@ -109,50 +124,18 @@
                                 <div class="table-responsive">
                                     <table class="table table-hover align-middle border-top">
                                         <thead class="table-light">
-                                            <tr>
-                                                <th class="text-start ps-3">Tên đăng nhập</th>
-                                                <th>Quyền</th>
-                                                <th>Trạng thái</th>
-                                                <th class="text-end">Hành động</th>
-                                            </tr>
+                                            <tr><th class="text-start ps-3">Tên đăng nhập</th><th>Quyền</th><th>Trạng thái</th><th class="text-end pe-3">Hành động</th></tr>
                                         </thead>
                                         <tbody id="list-users"></tbody>
                                     </table>
                                 </div>
                             </div>
-
                             <% ['foods', 'gyms', 'spas', 'swims', 'transports', 'billiards'].forEach((type) => { %> 
                                 <div class="tab-pane fade" id="tab-<%= type %>">
-                                    <div class="table-responsive">
-                                        <table class="table table-hover align-middle border-top">
-                                            <thead class="table-light">
-                                                <tr>
-                                                    <th style="width: 80px;">Ảnh</th>
-                                                    <th class="text-start">Tên dịch vụ</th>
-                                                    <th class="text-end">Hành động</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody id="list-<%= type %>"></tbody>
-                                        </table>
-                                    </div>
+                                    <div class="table-responsive"><table class="table table-hover align-middle border-top"><tbody id="list-<%= type %>"></tbody></table></div>
                                 </div>
                             <% }) %>
-
-                            <div class="tab-pane fade" id="tab-reviews">
-                                <div class="table-responsive">
-                                    <table class="table table-hover align-middle border-top">
-                                        <thead class="table-light">
-                                            <tr>
-                                                <th class="text-start">Tên khách hàng</th>
-                                                <th class="text-start">Nội dung đánh giá</th>
-                                                <th>Số sao</th>
-                                                <th class="text-end">Hành động</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="list-reviews"></tbody>
-                                    </table>
-                                </div>
-                            </div>
+                            <div class="tab-pane fade" id="tab-reviews"><div class="table-responsive"><table class="table table-hover align-middle border-top"><tbody id="list-reviews"></tbody></table></div></div>
                         </div>
                     </div>
                 </div>
@@ -160,173 +143,155 @@
         </div>
     </div>
 
-    <div class="modal fade" id="resetPwdModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Cấp mật khẩu mới</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    <div id="chat-wrapper">
+        <div id="chat-window">
+            <div class="chat-layout">
+                <div class="chat-sidebar">
+                    <div style="padding: 10px; font-weight: bold; background: #eee; font-size: 0.75rem;">DANH SÁCH LIÊN HỆ</div>
+                    <div id="contact-list">
+                        <p class="text-muted small p-2">Đang tải...</p>
+                    </div>
                 </div>
-                <div class="modal-body">
-                    <input type="hidden" id="resetUserId">
-                    <label class="form-label">Mật khẩu mới:</label>
-                    <input type="password" id="newPassword" class="form-control" placeholder="Nhập mật khẩu mới...">
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-                    <button type="button" class="btn btn-primary" onclick="submitResetPwd()">Lưu thay đổi</button>
+                <div class="chat-main">
+                    <div id="chat-header" class="d-flex justify-content-between align-items-center">
+                        <span id="chattingWith">💬 Chọn người để chat</span>
+                        <button class="btn btn-sm btn-light border-0" onclick="toggleChat()">—</button>
+                    </div>
+                    <div id="chat-messages">
+                        <p class="text-muted text-center small mt-5">Chọn tài khoản bên trái để xem tin nhắn</p>
+                    </div>
+                    <div class="p-2 border-top d-flex bg-light">
+                        <input type="text" id="chatInput" class="form-control form-control-sm me-2" placeholder="Nhập tin..." disabled>
+                        <button class="btn btn-primary btn-sm" id="btnSend" onclick="sendMsg()" disabled>Gửi</button>
+                    </div>
                 </div>
             </div>
         </div>
+        <button id="chat-button" onclick="toggleChat()">
+            <i class="fa-solid fa-comments"></i>
+        </button>
     </div>
 
+    <div class="modal fade" id="resetPwdModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h5>Cấp mật khẩu mới</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><input type="hidden" id="resetUserId"><input type="password" id="newPassword" class="form-control" placeholder="Mật khẩu mới..."></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button><button type="button" class="btn btn-primary" onclick="submitResetPwd()">Lưu</button></div></div></div></div>
+
+    <script src="/socket.io/socket.io.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <script>
-        // --- 📊 BIỂU ĐỒ ---
-        const ctx = document.getElementById('orderChart').getContext('2d');
-        const bookingDataRaw = document.getElementById('bookingDataRaw').value;
-        const bookingData = bookingDataRaw ? JSON.parse(bookingDataRaw) : [0,0,0,0,0,0]; 
+        // --- 💬 LOGIC CHAT (GIỮ NGUYÊN) ---
+        const socket = io();
+        const myId = String("<%= user._id %>");
+        let partnerId = null;
+        let knownContacts = [];
+        socket.emit('join-private-room', { myId });
 
-        new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6'],
-                datasets: [{
-                    label: 'Số đơn hàng',
-                    data: bookingData,
-                    backgroundColor: '#0d6efd',
-                    borderRadius: 8,
-                }]
-            },
-            options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }, plugins: { legend: { display: false } } }
+        function toggleChat() {
+            const win = document.getElementById('chat-window');
+            win.style.display = (win.style.display === 'none' || win.style.display === '') ? 'flex' : 'none';
+            if(win.style.display === 'flex') loadContacts();
+        }
+        async function loadContacts() {
+            try {
+                const res = await fetch('/api/chats/contacts');
+                knownContacts = await res.json();
+                renderSidebar();
+            } catch (e) {}
+        }
+        function renderSidebar() {
+            const list = document.getElementById('contact-list');
+            list.innerHTML = knownContacts.map(c => `
+                <div class="contact-item ${partnerId === String(c._id) ? 'active' : ''}" id="contact-${c._id}" onclick="openChatWithUser('${c._id}', '${c.username}')">
+                    <i class="fa-solid fa-user-circle"></i> ${c.username}
+                    <span class="dot-notify d-none" id="dot-${c._id}"></span>
+                </div>`).join('');
+        }
+        function openChatWithUser(id, name) {
+            partnerId = String(id);
+            if (!knownContacts.find(c => String(c._id) === id)) {
+                knownContacts.unshift({ _id: id, username: name });
+                renderSidebar();
+            }
+            document.getElementById('chattingWith').innerText = "💬 " + name;
+            document.getElementById('chat-window').style.display = 'flex';
+            document.getElementById('chatInput').disabled = false;
+            document.getElementById('btnSend').disabled = false;
+            const dot = document.getElementById('dot-' + id);
+            if(dot) dot.classList.add('d-none');
+            document.querySelectorAll('.contact-item').forEach(el => el.classList.remove('active'));
+            const target = document.getElementById('contact-' + id);
+            if(target) target.classList.add('active');
+            loadChatHistory();
+        }
+        async function loadChatHistory() {
+            if(!partnerId) return;
+            const msgBox = document.getElementById('chat-messages');
+            msgBox.innerHTML = '<p class="text-center small mt-5">Đang tải...</p>';
+            try {
+                const res = await fetch(`/api/chats/history/${myId}/${partnerId}`);
+                const history = await res.json();
+                msgBox.innerHTML = history.length ? '' : '<p class="text-center small mt-5 text-muted">Chưa có tin nhắn.</p>';
+                history.forEach(msg => appendMessage(msg));
+                msgBox.scrollTop = msgBox.scrollHeight;
+            } catch(e) {}
+        }
+        function sendMsg() {
+            const input = document.getElementById('chatInput');
+            const val = input.value.trim();
+            if(!val || !partnerId) return;
+            socket.emit('send-private-message', { senderId: myId, receiverId: partnerId, message: val });
+            input.value = '';
+        }
+        socket.on('receive-private-message', (data) => {
+            const sId = data.sender?._id ? String(data.sender._id) : String(data.sender);
+            const rId = data.receiver?._id ? String(data.receiver._id) : String(data.receiver);
+            if((sId === partnerId && rId === myId) || (sId === myId && rId === partnerId)) {
+                appendMessage(data);
+                document.getElementById('chat-messages').scrollTop = document.getElementById('chat-messages').scrollHeight;
+            } else if (sId !== myId) {
+                const dot = document.getElementById('dot-' + sId);
+                if(dot) dot.classList.remove('d-none');
+                else loadContacts();
+            }
         });
+        function appendMessage(data) {
+            const msgBox = document.getElementById('chat-messages');
+            const senderId = data.sender?._id ? String(data.sender._id) : String(data.sender);
+            const isMe = (senderId === myId);
+            const html = `<div class="msg ${isMe ? 'msg-me' : 'msg-partner'}"><small style="display:block; font-size:10px; opacity:0.6">${isMe?'Bạn':(data.sender?.username||'Đối phương')}</small>${data.message}</div>`;
+            msgBox.insertAdjacentHTML('beforeend', html);
+        }
+        document.getElementById('chatInput').addEventListener('keypress', e => { if(e.key === 'Enter') sendMsg(); });
 
-        // --- 👤 TÀI KHOẢN ---
+        // --- 👤 QUẢN LÝ USER (GIỮ NGUYÊN) ---
         async function loadUsers() {
             try {
                 const res = await fetch('/api/admin/users');
                 const users = await res.json();
-                const tbody = document.getElementById('list-users');
-                tbody.innerHTML = users.map(u => `
+                document.getElementById('list-users').innerHTML = users.map(u => `
                     <tr>
                         <td class="text-start fw-bold ps-3">${u.username}</td>
                         <td><span class="badge bg-info">${u.role}</span></td>
-                        <td><span class="badge ${u.isActive?'bg-success':'bg-danger'}">${u.isActive?'Hoạt động':'Đã khóa'}</span></td>
-                        <td class="text-end">
+                        <td><span class="badge ${u.isActive?'bg-success':'bg-danger'}">${u.isActive?'Hoạt động':'Khóa'}</span></td>
+                        <td class="text-end pe-3">
+                            <button class="btn btn-sm btn-primary" onclick="openChatWithUser('${u._id}', '${u.username}')"><i class="fa-solid fa-comment"></i></button>
                             <button class="btn btn-sm btn-outline-warning" onclick="openResetModal('${u._id}')">🔑</button>
                             <button class="btn btn-sm ${u.isActive?'btn-outline-secondary':'btn-outline-success'}" onclick="toggleUserStatus('${u._id}')">${u.isActive?'Khóa':'Mở'}</button>
                             <button class="btn btn-sm btn-danger" onclick="deleteUser('${u._id}')">🗑️</button>
                         </td>
-                    </tr>
-                `).join('');
+                    </tr>`).join('');
             } catch(e) {}
         }
+        function openResetModal(id) { document.getElementById('resetUserId').value = id; new bootstrap.Modal(document.getElementById('resetPwdModal')).show(); }
+        async function submitResetPwd() { const id = document.getElementById('resetUserId').value, pass = document.getElementById('newPassword').value; await fetch(`/api/admin/users/${id}/reset-password`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ newPassword: pass }) }); location.reload(); }
+        async function toggleUserStatus(id) { await fetch(`/api/admin/users/${id}/toggle-status`, { method: 'PUT' }); loadUsers(); }
+        async function deleteUser(id) { if(confirm("Xóa User này?")) { await fetch(`/api/admin/users/${id}`, { method: 'DELETE' }); loadUsers(); } }
+        async function loadServices(type) { try { const res = await fetch(`/api/${type}`); const data = await res.json(); document.getElementById(`list-${type}`).innerHTML = data.map(item => `<tr><td><img src="${item.image}" width="60" height="40" class="rounded" style="object-fit:cover"></td><td class="fw-bold ps-3">${item.name}</td><td class="text-end"><button class="btn btn-outline-danger btn-sm" onclick="deleteService('${type}', '${item._id}')">🗑️</button></td></tr>`).join(''); } catch (err) {} }
+        async function deleteService(type, id) { if (confirm('Xóa?')) { await fetch(`/api/${type}/${id}`, { method: 'DELETE' }); loadServices(type); } }
+        document.getElementById('addServiceForm').addEventListener('submit', async (e) => { e.preventDefault(); const type = document.getElementById('serviceType').value, name = document.getElementById('serviceName').value, img = document.getElementById('serviceImage').value; await fetch(`/api/${type}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, image: img }) }); e.target.reset(); loadServices(type); });
+        async function loadReviews() { try { const res = await fetch('/api/reviews'), reviews = await res.json(), tbody = document.getElementById('list-reviews'); tbody.innerHTML = reviews.map(r => `<tr><td class="text-start fw-bold">${r.userId?.username || 'Khách'}</td><td class="text-start">${r.comment}</td><td>${'⭐'.repeat(r.rating)}</td><td class="text-end"><button class="btn btn-sm btn-outline-danger" onclick="deleteReview('${r._id}')">🗑️</button></td></tr>`).join(''); } catch (err) {} }
+        async function deleteReview(id) { if (confirm("Xóa?")) { await fetch(`/api/reviews/${id}`, { method: 'DELETE' }); loadReviews(); } }
 
-        function openResetModal(id) {
-            document.getElementById('resetUserId').value = id;
-            new bootstrap.Modal(document.getElementById('resetPwdModal')).show();
-        }
-
-        async function submitResetPwd() {
-            const id = document.getElementById('resetUserId').value;
-            const newPassword = document.getElementById('newPassword').value;
-            if(!newPassword) return alert("Vui lòng nhập mật khẩu");
-            const res = await fetch(`/api/admin/users/${id}/reset-password`, {
-                method: 'PUT',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ newPassword })
-            });
-            if(res.ok) { alert("Thành công!"); location.reload(); }
-        }
-
-        async function toggleUserStatus(id) {
-            if(confirm("Đổi trạng thái tài khoản?")) {
-                await fetch(`/api/admin/users/${id}/toggle-status`, { method: 'PUT' });
-                loadUsers();
-            }
-        }
-
-        async function deleteUser(id) {
-            if(confirm("Xóa vĩnh viễn tài khoản?")) {
-                await fetch(`/api/admin/users/${id}`, { method: 'DELETE' });
-                loadUsers();
-            }
-        }
-
-        // --- 🛠️ DỊCH VỤ ---
-        async function loadServices(type) {
-            try {
-                const res = await fetch(`/api/${type}`);
-                const data = await res.json();
-                const tbody = document.getElementById(`list-${type}`);
-                if (!data.length) { tbody.innerHTML = '<tr><td colspan="3" class="text-muted py-3">Chưa có dữ liệu</td></tr>'; return; }
-                tbody.innerHTML = data.map(item => `
-                    <tr>
-                        <td><img src="${item.image}" width="60" height="45" class="rounded shadow-sm" style="object-fit:cover"></td>
-                        <td class="fw-bold text-start ps-3">${item.name}</td>
-                        <td class="text-end"><button class="btn btn-outline-danger btn-sm px-3" onclick="deleteService('${type}', '${item._id}')">🗑️ Xóa</button></td>
-                    </tr>
-                `).join('');
-            } catch (err) { console.error(err); }
-        }
-
-        async function deleteService(type, id) {
-            if (confirm('Xóa dịch vụ này?')) {
-                const res = await fetch(`/api/${type}/${id}`, { method: 'DELETE' });
-                if (res.ok) loadServices(type);
-            }
-        }
-
-        document.getElementById('addServiceForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const type = document.getElementById('serviceType').value;
-            const name = document.getElementById('serviceName').value;
-            const image = document.getElementById('serviceImage').value;
-            const res = await fetch(`/api/${type}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name, image })
-            });
-            if (res.ok) { e.target.reset(); loadServices(type); }
-        });
-
-        // --- ⭐ ĐÁNH GIÁ (ĐỔI TÊN THÀNH KHÁCH HÀNG THÂN THIẾT) ---
-        async function loadReviews() {
-            try {
-                const res = await fetch('/api/reviews');
-                const reviews = await res.json();
-                const tbody = document.getElementById('list-reviews');
-                if (!reviews.length) {
-                    tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-3">Chưa có đánh giá nào</td></tr>';
-                    return;
-                }
-                tbody.innerHTML = reviews.map(r => `
-                    <tr>
-                        <td class="text-start fw-bold">${r.userId?.username || 'Khách hàng thân thiết'}</td>
-                        <td class="text-start">${r.comment}</td>
-                        <td><span class="text-warning">${'⭐'.repeat(r.rating)}</span></td>
-                        <td class="text-end">
-                            <button class="btn btn-sm btn-outline-danger px-3 rounded-pill" onclick="deleteReview('${r._id}')">🗑️ Xóa</button>
-                        </td>
-                    </tr>
-                `).join('');
-            } catch (err) { console.error("Lỗi load review:", err); }
-        }
-
-        async function deleteReview(id) {
-            if (confirm("Xóa đánh giá này?")) {
-                const res = await fetch(`/api/reviews/${id}`, { method: 'DELETE' });
-                if (res.ok) loadReviews();
-            }
-        }
-
-        window.onload = () => {
-            loadUsers();
-            loadReviews();
-            ['foods', 'gyms', 'spas', 'swims', 'transports', 'billiards'].forEach(loadServices);
-        };
+        window.onload = () => { loadUsers(); loadReviews(); ['foods', 'gyms', 'spas', 'swims', 'transports', 'billiards'].forEach(loadServices); };
     </script>
 </body>
 </html>

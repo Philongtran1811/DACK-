@@ -2,51 +2,59 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quản Lý Đặt Phòng - Lễ Tân</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         .status-badge { min-width: 100px; text-align: center; }
         .table img { width: 50px; height: 50px; object-fit: cover; border-radius: 5px; }
-        
-        /* --- PHẦN THÊM MỚI: Style cho sơ đồ phòng nhanh --- */
-        .room-grid { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); 
-            gap: 15px; 
-            margin-bottom: 40px; 
-        }
-        .room-item { 
-            background: white; 
-            border-radius: 12px; 
-            padding: 15px; 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05); 
-            border-left: 8px solid #ccc; 
-            transition: 0.3s;
-        }
-        /* Màu sắc theo trạng thái */
-        .room-item.AVAILABLE { border-left-color: #198754; } /* Xanh lá: Trống */
-        .room-item.BOOKED { border-left-color: #dc3545; }    /* Đỏ: Đang ở */
-        .room-item.MAINTENANCE { border-left-color: #ffc107; } /* Vàng: Bảo trì */
-        
+        .room-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px; margin-bottom: 40px; }
+        .room-item { background: white; border-radius: 12px; padding: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border-left: 8px solid #ccc; transition: 0.3s; }
+        .room-item.AVAILABLE { border-left-color: #198754; }
+        .room-item.BOOKED { border-left-color: #dc3545; }
+        .room-item.MAINTENANCE { border-left-color: #ffc107; }
         .room-name { font-weight: bold; font-size: 1.1rem; color: #333; }
         .btn-status-group .btn { font-size: 0.7rem; padding: 3px 6px; font-weight: bold; }
-        /* -------------------------------------------------- */
+
+        /* --- 💬 CSS CHATBOX --- */
+        #chat-wrapper { position: fixed; bottom: 20px; right: 20px; z-index: 9999; }
+        #chat-window { 
+            display: none; width: 550px; height: 500px; 
+            background: white; border-radius: 15px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2); 
+            overflow: hidden; border: 1px solid #ddd;
+        }
+        .chat-layout { display: flex; height: 100%; }
+        .chat-sidebar { width: 180px; border-right: 1px solid #eee; background: #f8f9fa; overflow-y: auto; }
+        .chat-main { flex: 1; display: flex; flex-direction: column; }
+        
+        .contact-item { padding: 10px; border-bottom: 1px solid #eee; cursor: pointer; font-size: 0.85rem; }
+        .contact-item:hover { background: #e9ecef; }
+        .contact-item.active { background: #d1e7dd; font-weight: bold; border-left: 4px solid #198754; }
+
+        #chat-header { background: #198754; color: white; padding: 15px; font-weight: bold; }
+        #chat-messages { flex: 1; padding: 15px; overflow-y: auto; background: white; display: flex; flex-direction: column; }
+        .msg { margin-bottom: 10px; padding: 8px 12px; border-radius: 10px; max-width: 85%; font-size: 0.85rem; position: relative; }
+        .msg-me { background: #198754; color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
+        .msg-partner { background: #e9ecef; color: #333; align-self: flex-start; border-bottom-left-radius: 2px; }
+        #chat-button { width: 60px; height: 60px; border-radius: 50%; background: #198754; color: white; border: none; box-shadow: 0 5px 15px rgba(0,0,0,0.3); font-size: 24px; transition: 0.3s; }
+        #chat-button:hover { transform: scale(1.1); }
     </style>
 </head>
 <body class="bg-light">
 
 <nav class="navbar navbar-dark bg-dark mb-4">
     <div class="container d-flex justify-content-between align-items-center">
-        <a class="navbar-brand" href="/">🏨 HOTEL PRO - RECEPTIONIST</a>
+        <a class="navbar-brand fw-bold" href="/">🏨 HOTEL PRO - RECEPTIONIST</a>
         <div class="d-flex align-items-center">
-            <span class="text-white me-3">Chào, <%= user.name %></span>
+            <span class="text-white me-3">Chào, <b><%= user.username %></b></span>
             <a href="/api/auth/logout" class="btn btn-outline-light btn-sm">🚪 Đăng xuất</a>
         </div>
     </div>
 </nav>
 
 <div class="container">
-    
     <div class="mb-4">
         <h4 class="text-primary mb-3">🗺️ Quản lý trạng thái phòng nhanh</h4>
         <div class="room-grid">
@@ -62,7 +70,6 @@
                                 <%= room.status %>
                             </span>
                         </div>
-                        
                         <div class="btn-group btn-status-group w-100 mt-2">
                             <button onclick="updateRoomQuick('<%= room._id %>', 'AVAILABLE')" class="btn btn-outline-success <%= room.status === 'AVAILABLE' ? 'active' : '' %>">TRỐNG</button>
                             <button onclick="updateRoomQuick('<%= room._id %>', 'BOOKED')" class="btn btn-outline-danger <%= room.status === 'BOOKED' ? 'active' : '' %>">Ở</button>
@@ -70,11 +77,10 @@
                         </div>
                     </div>
                 <% }) %>
-            <% } else { %>
-                <p class="text-muted">Chưa có dữ liệu phòng để hiển thị sơ đồ.</p>
             <% } %>
         </div>
     </div>
+
     <hr class="my-5">
 
     <div class="card shadow border-0">
@@ -98,7 +104,7 @@
                         <% bookings.forEach(bk => { %>
                             <tr>
                                 <td>
-                                    <strong><%= bk.user?.name %></strong><br>
+                                    <strong><%= bk.user?.username %></strong><br>
                                     <small class="text-muted">📞 <%= bk.user?.phone %></small>
                                 </td>
                                 <td>
@@ -113,28 +119,18 @@
                                     <span class="text-danger fw-bold"><%= bk.totalPrice?.toLocaleString() %>đ</span>
                                 </td>
                                 <td>
-                                    <% if(bk.status === 'CONFIRMED') { %>
-                                        <span class="badge bg-primary status-badge">ĐÃ ĐẶT</span>
-                                    <% } else if(bk.status === 'CHECKED_IN') { %>
-                                        <span class="badge bg-success status-badge">ĐANG Ở</span>
-                                    <% } else if(bk.status === 'COMPLETED') { %>
-                                        <span class="badge bg-secondary status-badge">HOÀN TẤT</span>
-                                    <% } else { %>
-                                        <span class="badge bg-danger status-badge">ĐÃ HỦY</span>
-                                    <% } %>
+                                    <span class="badge <%= bk.status === 'CONFIRMED' ? 'bg-primary' : 'bg-success' %>"><%= bk.status %></span>
                                 </td>
                                 <td>
                                     <div class="btn-group">
                                         <% if(bk.status === 'CONFIRMED') { %>
                                             <button onclick="changeStatus('<%= bk._id %>', 'CHECKED_IN')" class="btn btn-sm btn-success px-3">Check-in</button>
                                         <% } %>
-                                        
                                         <% if(bk.status === 'CHECKED_IN') { %>
                                             <button onclick="openPaymentModal('<%= bk._id %>', '<%= bk.totalPrice %>')" class="btn btn-sm btn-info text-white px-3">Check-out</button>
                                         <% } %>
-
-                                        <% if(bk.status !== 'CANCELLED' && bk.status !== 'COMPLETED') { %>
-                                            <button onclick="changeStatus('<%= bk._id %>', 'CANCELLED')" class="btn btn-sm btn-outline-danger">Hủy</button>
+                                        <% if(bk.user) { %>
+                                            <button onclick="openChatWithUser('<%= bk.user._id %>', '<%= bk.user.username %>')" class="btn btn-sm btn-outline-primary"><i class="fa-solid fa-comment"></i></button>
                                         <% } %>
                                     </div>
                                 </td>
@@ -145,6 +141,50 @@
             </div>
         </div>
     </div>
+</div>
+
+<div id="chat-wrapper">
+    <div id="chat-window">
+        <div class="chat-layout">
+            <div class="chat-sidebar">
+                <div style="padding: 10px; font-weight: bold; background: #eee; font-size: 0.75rem;">DANH SÁCH KHÁCH</div>
+                <div id="contact-list">
+                    <% 
+                        let contacts = [];
+                        let addedIds = new Set();
+                        bookings.forEach(b => {
+                            if(b.user && !addedIds.has(b.user._id.toString())){
+                                addedIds.add(b.user._id.toString());
+                                contacts.push(b.user);
+                            }
+                        });
+                    %>
+                    <% contacts.forEach(c => { %>
+                        <div class="contact-item" id="contact-<%= c._id %>" onclick="openChatWithUser('<%= c._id %>', '<%= c.username %>')">
+                            <i class="fa-solid fa-user-circle"></i> <%= c.username %>
+                        </div>
+                    <% }) %>
+                </div>
+            </div>
+
+            <div class="chat-main">
+                <div id="chat-header" class="d-flex justify-content-between align-items-center">
+                    <span id="chattingWith">💬 Chọn khách để chat</span>
+                    <button class="btn btn-sm btn-light border-0" onclick="toggleChat()">—</button>
+                </div>
+                <div id="chat-messages">
+                    <p class="text-muted text-center small mt-5">Chọn khách hàng bên trái để xem lịch sử hội thoại</p>
+                </div>
+                <div class="p-2 border-top d-flex bg-light">
+                    <input type="text" id="chatInput" class="form-control form-control-sm me-2" placeholder="Nhập tin..." disabled>
+                    <button class="btn btn-success btn-sm" id="btnSend" onclick="sendMsg()" disabled>Gửi</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <button id="chat-button" onclick="toggleChat()">
+        <i class="fa-solid fa-comments"></i>
+    </button>
 </div>
 
 <div class="modal fade" id="paymentModal" tabindex="-1" aria-hidden="true">
@@ -162,15 +202,13 @@
                 <div id="methodBox">
                     <p class="fw-bold">Chọn hình thức thanh toán:</p>
                     <div class="d-grid gap-3">
-                        <button onclick="submitCheckOut('CASH')" class="btn btn-outline-success py-3 fw-bold">💵 Tiền mặt (Bấm OK)</button>
-                        <button onclick="showQR()" class="btn btn-outline-primary py-3 fw-bold">📱 Chuyển khoản (Hiện mã QR)</button>
+                        <button onclick="submitCheckOut('CASH')" class="btn btn-outline-success py-3 fw-bold">💵 Tiền mặt</button>
+                        <button onclick="showQR()" class="btn btn-outline-primary py-3 fw-bold">📱 Chuyển khoản</button>
                     </div>
                 </div>
                 <div id="qrBox" style="display: none;">
-                    <h6 class="text-primary fw-bold">MÃ QR NGÂN HÀNG</h6>
                     <img src="/images/123.jpg" class="img-fluid my-3 shadow-sm border p-2" style="max-width: 250px;">
-                    <hr>
-                    <button onclick="submitCheckOut('TRANSFER')" class="btn btn-info text-white w-100 py-2 fw-bold">OK - Đã nhận tiền</button>
+                    <button onclick="submitCheckOut('TRANSFER')" class="btn btn-info text-white w-100 py-2">Đã nhận tiền</button>
                     <button onclick="hideQR()" class="btn btn-link btn-sm text-secondary mt-2">Quay lại</button>
                 </div>
             </div>
@@ -178,73 +216,154 @@
     </div>
 </div>
 
+<script src="/socket.io/socket.io.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
 <script>
-let currentBookingId = null;
-const modalObj = new bootstrap.Modal(document.getElementById('paymentModal'));
+    let currentBookingId = null;
+    const modalObj = new bootstrap.Modal(document.getElementById('paymentModal'));
 
-// ✅ HÀM MỚI: Cập nhật trạng thái phòng qua sơ đồ hình chữ nhật
-async function updateRoomQuick(roomId, newStatus) {
-    if(!confirm(`Xác nhận đổi trạng thái phòng sang ${newStatus}?`)) return;
-    try {
-        const res = await fetch(`/api/rooms/${roomId}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ status: newStatus })
-        });
-        if(res.ok) {
-            location.reload();
-        } else {
-            alert("Lỗi cập nhật phòng!");
+    const socket = io();
+    const myId = String("<%= user._id %>"); 
+    const myUsername = "<%= user.username %>";
+
+    socket.emit('join-private-room', { myId: myId });
+
+    let partnerId = null; 
+
+    function toggleChat() {
+        const win = document.getElementById('chat-window');
+        win.style.display = (win.style.display === 'none' || win.style.display === '') ? 'flex' : 'none';
+    }
+
+    function openChatWithUser(userId, userName) {
+        partnerId = String(userId); 
+        document.getElementById('chattingWith').innerText = "💬 " + userName;
+        document.getElementById('chat-window').style.display = 'flex';
+        document.getElementById('chatInput').disabled = false;
+        document.getElementById('btnSend').disabled = false;
+
+        document.querySelectorAll('.contact-item').forEach(el => el.classList.remove('active'));
+        const targetEl = document.getElementById('contact-' + userId);
+        if(targetEl) {
+            targetEl.classList.add('active');
+            targetEl.style.color = ''; 
         }
-    } catch (err) { alert("Lỗi kết nối!"); }
-}
 
-// ✅ GIỮ NGUYÊN CÁC LOGIC CŨ CỦA NHÓM
-function openPaymentModal(id, price) {
-    currentBookingId = id;
-    document.getElementById('displayPrice').innerText = Number(price).toLocaleString('vi-VN') + "đ";
-    hideQR(); 
-    modalObj.show();
-}
+        loadChatHistory();
+    }
 
-function showQR() {
-    document.getElementById('methodBox').style.display = 'none';
-    document.getElementById('qrBox').style.display = 'block';
-}
-
-function hideQR() {
-    document.getElementById('methodBox').style.display = 'block';
-    document.getElementById('qrBox').style.display = 'none';
-}
-
-async function submitCheckOut(method) {
-    try {
-        const res = await fetch(`/api/bookings/update-status/${currentBookingId}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ status: 'COMPLETED', paymentMethod: method })
-        });
-        if(res.ok) {
-            modalObj.hide();
-            alert("✅ Đã hoàn tất trả phòng!");
-            location.reload();
+    async function loadChatHistory() {
+        if(!partnerId) return;
+        const msgBox = document.getElementById('chat-messages');
+        msgBox.innerHTML = '<p class="text-center text-muted small mt-5">Đang tải lịch sử...</p>';
+        
+        try {
+            const res = await fetch(`/api/chats/history/${myId}/${partnerId}`);
+            const history = await res.json();
+            
+            msgBox.innerHTML = ''; 
+            if (Array.isArray(history) && history.length > 0) {
+                history.forEach(msg => appendMessage(msg));
+            } else {
+                msgBox.innerHTML = '<p class="text-muted text-center small mt-5">Chưa có tin nhắn nào trước đây.</p>';
+            }
+            setTimeout(() => { msgBox.scrollTop = msgBox.scrollHeight; }, 100);
+        } catch (err) { 
+            console.error("Lỗi tải history:", err);
+            msgBox.innerHTML = '<p class="text-center text-danger small mt-5">Lỗi kết nối!</p>';
         }
-    } catch (err) { alert("Lỗi kết nối!"); }
-}
+    }
 
-async function changeStatus(id, newStatus) {
-    if(!confirm(`Xác nhận thao tác?`)) return;
-    try {
-        const res = await fetch(`/api/bookings/update-status/${id}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ status: newStatus })
+    function sendMsg() {
+        const input = document.getElementById('chatInput');
+        const msgText = input.value.trim();
+        if (!msgText || !partnerId) return;
+        
+        socket.emit('send-private-message', {
+            senderId: myId,
+            receiverId: partnerId,
+            message: msgText
         });
-        if(res.ok) location.reload();
-    } catch (err) { alert("Lỗi kết nối!"); }
-}
+        input.value = '';
+    }
+
+    socket.on('receive-private-message', (data) => {
+        const sId = data.sender?._id ? String(data.sender._id) : String(data.sender);
+        const rId = data.receiver?._id ? String(data.receiver._id) : String(data.receiver);
+
+        if((sId === partnerId && rId === myId) || (sId === myId && rId === partnerId)) {
+            appendMessage(data);
+            const box = document.getElementById('chat-messages');
+            box.scrollTop = box.scrollHeight;
+        } else if (sId !== myId) {
+            const otherContact = document.getElementById('contact-' + sId);
+            if(otherContact) {
+                otherContact.style.color = 'red';
+                otherContact.style.fontWeight = 'bold';
+            }
+        }
+    });
+
+    function appendMessage(data) {
+        const msgBox = document.getElementById('chat-messages');
+        if(!msgBox) return;
+
+        const senderId = data.sender?._id ? String(data.sender._id) : String(data.sender);
+        const isMe = (senderId === myId);
+
+        let displayName = isMe ? "Bạn" : (data.sender?.username || "Khách");
+
+        const html = `<div class="msg ${isMe ? 'msg-me' : 'msg-partner'}">
+            <small style="display:block; font-size:10px; opacity:0.6">${displayName}</small>
+            ${data.message}
+        </div>`;
+        msgBox.insertAdjacentHTML('beforeend', html);
+    }
+
+    document.getElementById('chatInput').addEventListener('keypress', e => { if(e.key === 'Enter') sendMsg(); });
+
+    // LOGIC NGHIỆP VỤ PHÒNG & THANH TOÁN
+    function openPaymentModal(id, price) {
+        currentBookingId = id;
+        document.getElementById('displayPrice').innerText = Number(price).toLocaleString() + "đ";
+        hideQR(); 
+        modalObj.show();
+    }
+    function showQR() { document.getElementById('methodBox').style.display = 'none'; document.getElementById('qrBox').style.display = 'block'; }
+    function hideQR() { document.getElementById('methodBox').style.display = 'block'; document.getElementById('qrBox').style.display = 'none'; }
+
+    async function submitCheckOut(method) {
+        try {
+            const res = await fetch(`/api/bookings/update-status/${currentBookingId}`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: 'COMPLETED', paymentMethod: method })
+            });
+            if(res.ok) { modalObj.hide(); alert("Check-out thành công!"); location.reload(); }
+        } catch (err) { alert("Lỗi!"); }
+    }
+
+    async function updateRoomQuick(roomId, newStatus) {
+        if(!confirm(`Xác nhận đổi trạng thái?`)) return;
+        try {
+            const res = await fetch(`/api/rooms/${roomId}`, {
+                method: 'PUT', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: newStatus })
+            });
+            if(res.ok) location.reload();
+        } catch (err) { alert("Lỗi!"); }
+    }
+
+    async function changeStatus(id, newStatus) {
+        if(!confirm(`Xác nhận?`)) return;
+        try {
+            const res = await fetch(`/api/bookings/update-status/${id}`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: newStatus })
+            });
+            if(res.ok) location.reload();
+        } catch (err) { alert("Lỗi!"); }
+    }
 </script>
-
 </body>
 </html>

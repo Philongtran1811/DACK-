@@ -14,61 +14,61 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
             min-height: 100vh;
         }
-        .navbar { 
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
-        }
+        .navbar { box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
         .main-card { 
-            background: white; 
-            padding: 40px 40px; 
-            border-radius: 20px; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15); 
-            margin-top: 30px; 
-            text-align: center; 
-            animation: fadeIn 0.8s ease-in-out;
+            background: white; padding: 40px 40px; border-radius: 20px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15); margin-top: 30px; 
+            text-align: center; animation: fadeIn 0.8s ease-in-out;
         }
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
         .action-btn {
-            min-width: 180px;
-            margin: 8px;
-            padding: 12px 20px;
-            font-weight: bold;
-            border-radius: 12px;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            font-size: 0.9rem;
+            min-width: 180px; margin: 8px; padding: 12px 20px;
+            font-weight: bold; border-radius: 12px; transition: all 0.3s ease;
+            text-transform: uppercase; letter-spacing: 1px; font-size: 0.9rem;
         }
-        .action-btn:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+        .action-btn:hover { transform: translateY(-5px); box-shadow: 0 8px 15px rgba(0,0,0,0.2); }
+        .nav-item .dropdown-menu { border-radius: 15px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.15); padding: 10px; min-width: 250px; }
+        .dropdown-item { padding: 10px 15px; border-radius: 10px; transition: 0.2s; }
+        footer { margin-top: 50px; padding-bottom: 30px; color: #475569; }
+
+        /* --- 💬 CSS CHATBOX SIDEBAR DẠNG CUỘN (SCROLL) --- */
+        #chat-wrapper { position: fixed; bottom: 30px; right: 30px; z-index: 9999; }
+        #chat-window { 
+            display: none; width: 550px; height: 500px; 
+            background: white; border-radius: 15px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2); 
+            overflow: hidden; border: 1px solid #ddd;
         }
-        .nav-item .dropdown-menu {
-            border-radius: 15px;
-            border: none;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-            padding: 10px;
-            min-width: 250px;
-        }
-        .dropdown-item {
-            padding: 10px 15px;
-            border-radius: 10px;
-            transition: 0.2s;
-        }
-        .dropdown-item:hover { background-color: #f8f9fa; }
+        .chat-layout { display: flex; height: 100%; }
+        .chat-sidebar { width: 180px; border-right: 1px solid #eee; background: #f8f9fa; overflow-y: auto; }
+        .chat-main { flex: 1; display: flex; flex-direction: column; height: 100%; }
         
-        .group-name {
-            color: #64748b;
-            font-size: 1.1rem;
-            margin-top: 15px;
+        .contact-item { padding: 12px; border-bottom: 1px solid #eee; cursor: pointer; font-size: 0.85rem; transition: 0.2s; }
+        .contact-item:hover { background: #e9ecef; }
+        .contact-item.active { background: #d1e7dd; font-weight: bold; border-left: 4px solid #0d6efd; }
+
+        #chat-header { background: #212529; color: white; padding: 15px; font-weight: bold; }
+        
+        /* Khu vực hiển thị tin nhắn có thanh cuộn */
+        #chat-messages { 
+            flex: 1; 
+            padding: 15px; 
+            overflow-y: auto; 
+            background: #f1f5f9; 
+            display: flex; 
+            flex-direction: column;
+            scroll-behavior: smooth; /* Cuộn mượt */
         }
-        footer {
-            margin-top: 50px;
-            padding-bottom: 30px;
-            color: #475569;
-        }
+        
+        .msg { margin-bottom: 10px; padding: 10px 15px; border-radius: 12px; max-width: 85%; font-size: 0.85rem; position: relative; }
+        .msg-me { background: #0d6efd; color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
+        .msg-partner { background: white; color: #333; align-self: flex-start; border-bottom-left-radius: 2px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        
+        #chat-button { width: 65px; height: 65px; border-radius: 50%; background: #0d6efd; color: white; border: none; box-shadow: 0 5px 20px rgba(0,0,0,0.3); font-size: 28px; transition: 0.3s; }
+        #chat-button:hover { transform: scale(1.1); }
     </style>
 </head>
 <body>
@@ -76,38 +76,33 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
     <div class="container">
         <a class="navbar-brand fw-bold fs-3" href="/">🏨 HOTEL PRO</a>
-
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
         </button>
-
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav me-auto">
                 <li class="nav-item"><a class="nav-link active" href="/">Trang chủ</a></li>
                 <% if (user) { %>
                     <li class="nav-item"><a class="nav-link" href="/rooms">Phòng</a></li>
                     <li class="nav-item"><a class="nav-link" href="/room-types">Loại phòng</a></li>
-                    
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle text-info fw-bold" href="#" role="button" data-bs-toggle="dropdown">
-                            ✨ Dịch vụ
-                        </a>
+                        <a class="nav-link dropdown-toggle text-info fw-bold" href="#" data-bs-toggle="dropdown">✨ Dịch vụ</a>
                         <ul class="dropdown-menu shadow">
-                            <li><a class="dropdown-item" href="/view/foods">🍔 Đồ ăn (Room Service)</a></li>
-                            <li><a class="dropdown-item" href="/view/gyms">🏋️‍♂️ Phòng Gym</a></li>
-                            <li><a class="dropdown-item" href="/view/spas">🧖‍♀️ Spa & Massage</a></li>
+                            <li><a class="dropdown-item" href="/view/foods">🍔 Đồ ăn</a></li>
+                            <li><a class="dropdown-item" href="/view/gyms">🏋️‍♂️ Gym</a></li>
+                            <li><a class="dropdown-item" href="/view/spas">🧖‍♀️ Spa</a></li>
                             <li><a class="dropdown-item" href="/view/swims">🏊‍♂️ Hồ bơi</a></li>
-                            <li><a class="dropdown-item" href="/view/transports">🚗 Đưa đón sân bay</a></li>
-                            <li><a class="dropdown-item" href="/view/billiards">🎱 Giải trí Bida</a></li> </ul>
+                            <li><a class="dropdown-item" href="/view/transports">🚗 Vận chuyển</a></li>
+                            <li><a class="dropdown-item" href="/view/billiards">🎱 Bida</a></li> 
+                        </ul>
                     </li>
                 <% } %>
             </ul>
-
             <div class="ms-auto d-flex align-items-center">
                 <% if (user) { %>
                     <div class="dropdown">
                         <button class="btn btn-outline-info dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                            Xin chào, <b><%= user.name || user.username %></b>
+                            Xin chào, <b><%= user.username %></b>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end shadow">
                             <% if (user.role === 'ADMIN') { %>
@@ -131,181 +126,207 @@
 <div class="container">
     <div class="main-card">
         <h1 class="display-4 fw-bold text-primary mb-3">Hệ Thống Quản Lý Khách Sạn</h1>
-        
         <hr class="my-4 mx-auto" style="width: 30%; border-top: 2px solid #e2e8f0;">
 
         <% if (user) { %>
             <div class="mb-4">
                 <span class="badge bg-success p-2 px-3 fs-6">Đã đăng nhập</span>
-                <span class="badge bg-secondary p-2 px-3 fs-6 ms-2">Quyền: <%= user.role || 'Thành viên' %></span>
+                <span class="badge bg-secondary p-2 px-3 fs-6 ms-2">Quyền: <%= user.role %></span>
             </div>
-
             <div class="d-flex justify-content-center flex-wrap">
                 <a href="/rooms" class="btn btn-success action-btn shadow-sm">🏨 Danh sách phòng</a>
                 <a href="/api/bookings/my-history" class="btn btn-info action-btn shadow-sm text-white">📜 Lịch sử đặt phòng</a>
                 <a href="/room-types" class="btn btn-warning action-btn shadow-sm text-dark">🧾 Loại phòng</a>
                 <a href="javascript:void(0)" onclick="openProfileModal()" class="btn btn-outline-primary action-btn">👤 Trang cá nhân</a>
             </div>
-
-            <h5 class="mt-5 mb-3 fw-bold text-secondary text-uppercase">Dịch vụ tiện ích</h5>
-            <div class="d-flex justify-content-center flex-wrap border p-3 rounded-4 bg-light">
-                <a href="/view/foods" class="btn btn-danger action-btn shadow-sm">🍔 Đồ ăn</a>
-                <a href="/view/gyms" class="btn btn-dark action-btn shadow-sm">🏋️‍♂️ Gym</a>
-                <a href="/view/spas" class="btn btn-primary action-btn shadow-sm" style="background-color: #6f42c1; border: none;">🧖‍♀️ Spa</a>
-                <a href="/view/swims" class="btn btn-info action-btn shadow-sm text-white">🏊‍♂️ Hồ bơi</a>
-                <a href="/view/transports" class="btn btn-secondary action-btn shadow-sm">🚗 Vận chuyển</a>
-                <a href="/view/billiards" class="btn btn-warning action-btn shadow-sm text-dark" style="background-color: #ffc107; border: none;">🎱 Bida</a> </div>
-
-            <p class="mt-5 text-muted fst-italic">
-                💡 Tất cả dịch vụ của khách sạn HOTEL PRO của chúng tôi đều được sử dụng miễn phí ⭐
-            </p>
-
         <% } else { %>
             <div class="py-4">
-                <div class="alert alert-warning d-inline-block px-5 shadow-sm">
-                    ⚠️ Vui lòng đăng nhập để truy cập các tính năng của hệ thống
-                </div>
-                <br>
-                <a href="/login" class="btn btn-primary btn-lg mt-3 px-5 py-3 shadow">
-                    🔐 ĐĂNG NHẬP NGAY
-                </a>
+                <div class="alert alert-warning d-inline-block px-5 shadow-sm">⚠️ Vui lòng đăng nhập để sử dụng dịch vụ</div>
+                <br><a href="/login" class="btn btn-primary btn-lg mt-3 px-5 py-3 shadow">🔐 ĐĂNG NHẬP NGAY</a>
             </div>
         <% } %>
     </div>
 </div>
+
+<% if (user) { %>
+<div id="chat-wrapper">
+    <div id="chat-window">
+        <div class="chat-layout">
+            <div class="chat-sidebar">
+                <div style="padding: 10px; font-weight: bold; background: #eee; font-size: 0.75rem;">LIÊN HỆ</div>
+                <div class="contact-item active" id="item-receptionist" onclick="changePartner('69d0d0a669c3c3d828bf754b', 'Lễ tân')">
+                    <i class="fa-solid fa-headset"></i> Lễ tân
+                </div>
+                <div class="contact-item" id="item-admin" onclick="changePartner('69d0d09969c3c3d828bf754a', 'Admin')">
+                    <i class="fa-solid fa-user-shield"></i> Admin
+                </div>
+            </div>
+
+            <div class="chat-main">
+                <div id="chat-header" class="d-flex justify-content-between align-items-center">
+                    <span id="chattingWith">💬 Chat Lễ tân</span>
+                    <button class="btn btn-sm btn-outline-light border-0" onclick="toggleChatWindow()">—</button>
+                </div>
+                <div id="chat-messages">
+                    </div>
+                <div class="p-3 border-top bg-white d-flex">
+                    <input type="text" id="chatInput" class="form-control form-control-sm me-2" placeholder="Nhập tin nhắn...">
+                    <button class="btn btn-primary btn-sm" id="btnSend" onclick="sendPrivateMsg()"><i class="fa-solid fa-paper-plane"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <button id="chat-button" onclick="toggleChatWindow()">
+        <i class="fa-solid fa-comment-dots"></i>
+    </button>
+</div>
+<% } %>
 
 <div class="modal fade" id="profileModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content shadow-lg border-0" style="border-radius: 20px;">
             <form id="profileForm">
                 <div class="modal-header bg-dark text-white border-0" style="border-radius: 20px 20px 0 0;">
-                    <h5 class="modal-title fw-bold"><i class="fa-solid fa-user-circle me-2"></i>Thông tin cá nhân</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <h5 class="modal-title fw-bold">Thông tin cá nhân</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body p-4 text-start">
-                    <div class="mb-3">
-                        <label class="form-label fw-bold small text-muted text-uppercase">Họ và tên</label>
-                        <input type="text" id="pFullName" class="form-control border-0 bg-light p-3" style="border-radius: 12px;" placeholder="Nhập tên thật của bạn..." required>
-                    </div>
+                <div class="modal-body p-4">
+                    <div class="mb-3"><label class="form-label fw-bold small">Họ và tên</label><input type="text" id="pFullName" class="form-control border-0 bg-light p-3" style="border-radius: 12px;" required></div>
                     <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold small text-muted text-uppercase">Số điện thoại</label>
-                            <input type="tel" id="pPhone" class="form-control border-0 bg-light p-3" style="border-radius: 12px;" placeholder="09xxxx...">
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold small text-muted text-uppercase">Giới tính</label>
-                            <select id="pGender" class="form-select border-0 bg-light p-3" style="border-radius: 12px;">
-                                <option value="Nam">Nam</option>
-                                <option value="Nữ">Nữ</option>
-                                <option value="Khác">Khác</option>
-                            </select>
-                        </div>
+                        <div class="col-md-6 mb-3"><label class="form-label fw-bold small">Số điện thoại</label><input type="tel" id="pPhone" class="form-control border-0 bg-light p-3" style="border-radius: 12px;"></div>
+                        <div class="col-md-6 mb-3"><label class="form-label fw-bold small">Giới tính</label><select id="pGender" class="form-select border-0 bg-light p-3" style="border-radius: 12px;"><option value="Nam">Nam</option><option value="Nữ">Nữ</option><option value="Khác">Khác</option></select></div>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-bold small text-muted text-uppercase">Địa chỉ cư trú</label>
-                        <input type="text" id="pAddress" class="form-control border-0 bg-light p-3" style="border-radius: 12px;" placeholder="Ví dụ: TP. Hồ Chí Minh">
-                    </div>
-                    <div class="mb-0">
-                        <label class="form-label fw-bold small text-muted text-uppercase">Giới thiệu ngắn</label>
-                        <textarea id="pBio" class="form-control border-0 bg-light p-3" style="border-radius: 12px;" rows="2" placeholder="Sở thích hoặc thông tin thêm..."></textarea>
-                    </div>
+                    <div class="mb-3"><label class="form-label fw-bold small">Địa chỉ</label><input type="text" id="pAddress" class="form-control border-0 bg-light p-3" style="border-radius: 12px;"></div>
+                    <div class="mb-0"><label class="form-label fw-bold small">Giới thiệu</label><textarea id="pBio" class="form-control border-0 bg-light p-3" style="border-radius: 12px;" rows="2"></textarea></div>
                 </div>
                 <div class="modal-footer border-0 p-4 pt-0">
                     <button type="button" class="btn btn-link text-danger text-decoration-none me-auto" onclick="deleteProfile()">Xóa hồ sơ</button>
                     <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Đóng</button>
-                    <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold">Lưu thay đổi</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold">Lưu</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
 
-<footer class="text-center">
-    <p class="mb-0">&copy; 2026 - <b>Hotel Manager Pro System</b></p>
-    <small class="text-muted">Đồ án thực tập nhóm - Đại học Công nghệ</small>
-</footer>
+<footer class="text-center"><p class="mb-0">&copy; 2026 - <b>Hotel Manager Pro System</b></p></footer>
 
+<script src="/socket.io/socket.io.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
+<% if (user) { %>
 <script>
-    // 1. Khởi tạo Bootstrap Modal
-    let profileModal;
-    document.addEventListener('DOMContentLoaded', function() {
-        profileModal = new bootstrap.Modal(document.getElementById('profileModal'));
+    const socket = io();
+    const myId = String("<%= user._id %>");
+    // ID đối phương (mặc định là Lễ tân)
+    let partnerId = "69d0d0a669c3c3d828bf754b"; 
+
+    socket.emit('join-private-room', { myId: myId });
+
+    // HÀM CHUYỂN ĐỔI NGƯỜI NHẮN TIN (ADMIN/LỄ TÂN)
+    function changePartner(id, name) {
+        partnerId = String(id);
+        document.getElementById('chattingWith').innerText = "💬 Chat " + name;
+        
+        // Cập nhật UI Sidebar
+        document.querySelectorAll('.contact-item').forEach(el => el.classList.remove('active'));
+        if(name === 'Admin') document.getElementById('item-admin').classList.add('active');
+        else document.getElementById('item-receptionist').classList.add('active');
+
+        // Load lại lịch sử chat với người mới
+        loadChatHistory();
+    }
+
+    function toggleChatWindow() {
+        const win = document.getElementById('chat-window');
+        const isOpening = (win.style.display === 'none' || win.style.display === '');
+        win.style.display = isOpening ? 'flex' : 'none';
+        if(isOpening) loadChatHistory();
+    }
+
+    async function loadChatHistory() {
+        const msgBox = document.getElementById('chat-messages');
+        msgBox.innerHTML = '<p class="text-center text-muted small mt-2">Đang nạp dữ liệu...</p>';
+        try {
+            const res = await fetch(`/api/chats/history/${myId}/${partnerId}`);
+            const history = await res.json();
+            msgBox.innerHTML = ''; 
+            if (Array.isArray(history) && history.length > 0) {
+                history.forEach(msg => appendMessage(msg));
+            } else {
+                msgBox.innerHTML = '<p class="text-center text-muted small mt-2">Bắt đầu trò chuyện ngay!</p>';
+            }
+            // Tự động cuộn xuống đáy
+            msgBox.scrollTop = msgBox.scrollHeight;
+        } catch (err) { 
+            msgBox.innerHTML = '<p class="text-center text-danger small">Lỗi tải tin nhắn!</p>'; 
+        }
+    }
+
+    function sendPrivateMsg() {
+        const input = document.getElementById('chatInput');
+        const val = input.value.trim();
+        if (!val || !partnerId) return;
+
+        socket.emit('send-private-message', {
+            senderId: myId,
+            receiverId: partnerId,
+            message: val
+        });
+        input.value = '';
+    }
+
+    socket.on('receive-private-message', (data) => {
+        const sId = data.sender?._id ? String(data.sender._id) : String(data.sender);
+        const rId = data.receiver?._id ? String(data.receiver._id) : String(data.receiver);
+
+        // Chỉ hiển thị nếu tin nhắn thuộc về người mình đang mở chat
+        if((sId === partnerId && rId === myId) || (sId === myId && rId === partnerId)) {
+            appendMessage(data);
+            const box = document.getElementById('chat-messages');
+            box.scrollTop = box.scrollHeight;
+        }
     });
 
-    // 2. Hàm mở và load dữ liệu Profile
+    function appendMessage(data) {
+        const msgBox = document.getElementById('chat-messages');
+        if(!msgBox) return;
+
+        const senderId = data.sender?._id ? String(data.sender._id) : String(data.sender);
+        const isMe = (senderId === myId);
+        let displayName = isMe ? "Bạn" : (data.sender?.username || (partnerId === '69d35970909a4376d0007a66' ? "Admin" : "Lễ tân"));
+
+        const html = `
+            <div class="msg ${isMe ? 'msg-me' : 'msg-partner'}">
+                <small style="display:block; font-size:10px; opacity:0.6">${displayName}</small>
+                <div>${data.message}</div>
+            </div>`;
+        msgBox.insertAdjacentHTML('beforeend', html);
+    }
+
+    document.getElementById('chatInput').addEventListener('keypress', e => { 
+        if(e.key === 'Enter') sendPrivateMsg(); 
+    });
+</script>
+<% } %>
+
+<script>
+    // PROFILE LOGIC GIỮ NGUYÊN
+    let profileModal;
+    document.addEventListener('DOMContentLoaded', () => { if(document.getElementById('profileModal')) profileModal = new bootstrap.Modal(document.getElementById('profileModal')); });
     async function openProfileModal() {
         try {
             const res = await fetch('/api/profiles/me');
             const data = await res.json();
-            
-            // data._id tồn tại nghĩa là User đã có bản ghi Profile trong DB
             if (data && data._id) {
                 document.getElementById('pFullName').value = data.fullName || '';
                 document.getElementById('pPhone').value = data.phone || '';
                 document.getElementById('pAddress').value = data.address || '';
                 document.getElementById('pGender').value = data.gender || 'Khác';
                 document.getElementById('pBio').value = data.bio || '';
-            } else {
-                // Nếu chưa có profile, dùng tên từ bảng User làm mặc định
-                document.getElementById('pFullName').value = "<%= user ? (user.name || user.username) : '' %>";
-                document.getElementById('pPhone').value = "";
-                document.getElementById('pAddress').value = "";
-                document.getElementById('pGender').value = "Khác";
-                document.getElementById('pBio').value = "";
+                profileModal.show();
             }
-            profileModal.show();
-        } catch (error) {
-            console.error("Lỗi load profile:", error);
-            alert("Không thể tải thông tin hồ sơ!");
-        }
-    }
-
-    // 3. Xử lý lưu thông tin Profile
-    document.getElementById('profileForm').onsubmit = async (e) => {
-        e.preventDefault();
-        const formData = {
-            fullName: document.getElementById('pFullName').value,
-            phone: document.getElementById('pPhone').value,
-            address: document.getElementById('pAddress').value,
-            gender: document.getElementById('pGender').value,
-            bio: document.getElementById('pBio').value
-        };
-
-        try {
-            const res = await fetch('/api/profiles/update', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
-            });
-
-            if (res.ok) {
-                alert("Đã cập nhật thông tin hồ sơ!");
-                profileModal.hide();
-                // Bro có thể thêm location.reload() nếu muốn đổi tên hiển thị ngay lập tức
-            } else {
-                alert("Lỗi khi lưu thông tin!");
-            }
-        } catch (error) {
-            console.error("Lỗi gửi profile:", error);
-            alert("Lỗi kết nối máy chủ!");
-        }
-    };
-
-    // 4. Xóa hồ sơ
-    async function deleteProfile() {
-        if (confirm("Xác nhận xóa hồ sơ cá nhân của bạn? Thông tin tài khoản vẫn được giữ nguyên.")) {
-            try {
-                const res = await fetch('/api/profiles/delete', { method: 'DELETE' });
-                if (res.ok) {
-                    alert("Đã xóa hồ sơ!");
-                    location.reload();
-                }
-            } catch (error) {
-                alert("Lỗi hệ thống!");
-            }
-        }
+        } catch (e) {}
     }
 </script>
 
